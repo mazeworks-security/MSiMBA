@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Gamba": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
