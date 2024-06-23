@@ -39,7 +39,8 @@ for (int i = 0; i < args.Length; i++)
             printUsage = true;
             break;
         case "-b":
-            bitWidth = uint.Parse(args[i++]);
+            bitWidth = uint.Parse(args[i+1]);
+            i++;
             break;
         case "-z":
             proveEquivalence = true;
@@ -110,7 +111,7 @@ if (checkLinear || checkSemiLinear)
     // Classify the MBA.
     var classification = AstClassifier.Classify(input)[input];
 
-    if (checkLinear && (classification == AstClassification.SemiLinear || classification == AstClassification.Nonlinear))
+    if (checkLinear && (classification == AstClassification.BitwiseWithConstants || classification == AstClassification.SemiLinear || classification == AstClassification.Nonlinear))
         throw new InvalidOperationException($"Linearity check failed! Expression is {classification}, but a linear MBA was expected.");
     // Note that a linear MBA can still be validly processed as if it was a semilinear MBA. 
     if (checkSemiLinear && classification == AstClassification.Nonlinear)
