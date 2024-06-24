@@ -1,4 +1,5 @@
 ﻿using Mba.Ast;
+using Mba.Common.MSiMBA;
 using Mba.Testing;
 using System;
 using System.Collections.Generic;
@@ -29,8 +30,14 @@ namespace Mba.Common.Minimization
             }
 
             // Otherwise use Espresso to compute a semi optimal version of the boolean function.
-            var boolean = EspressoMinimizer.SimplifyBoolean(resultVector, variables).ast;
-            return boolean;
+            var xnf = SimbaMinimizer.SimplifyBoolean(variables, resultVector);
+            var dnf = EspressoMinimizer.SimplifyBoolean(resultVector, variables).ast;
+
+            var c1 = MultibitSiMBA.GetCost(xnf, false, 1);
+            var c2 = MultibitSiMBA.GetCost(dnf, false, 1);
+            if (c1 < c2)
+                return xnf;
+            return dnf;
         }
 
         private static AstNode AsConstant(List<int> resultVector, uint bitWidth)

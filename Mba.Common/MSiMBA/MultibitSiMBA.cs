@@ -459,7 +459,7 @@ namespace Mba.Common.MSiMBA
 
                             // Subtract the coefficient from the result vector.
                             allZeroes = false;
-                            SubtractCoeff(ptr, bitIndex, coeff, index, width, varCount, onlyOneVar, trueMask);
+                            SubtractCoeff(moduloMask, ptr, bitIndex, coeff, index, width, varCount, onlyOneVar, trueMask);
 
                             // Add an entry to the linear combination list.
                             linearCombinations[i].Add((coeff, maskForIndex));
@@ -589,7 +589,7 @@ namespace Mba.Common.MSiMBA
             return ast;
         }
 
-        private static List<List<int>> GetVariableCombinations(int varCount)
+        public static List<List<int>> GetVariableCombinations(int varCount)
         {
             var comb = PyRange(0, varCount).Select(x => new List<int>() { x }).ToList();
             var _new = varCount;
@@ -616,7 +616,7 @@ namespace Mba.Common.MSiMBA
             return comb;
         }
 
-        private unsafe void SubtractCoeff(ApInt* pResultVec, ushort bitIndex, ApInt coeff, int firstStart, int width, int varCount, bool onlyOneVar, ulong trueMask)
+        public static unsafe void SubtractCoeff(ApInt moduloMask, ApInt* pResultVec, ushort bitIndex, ApInt coeff, int firstStart, int width, int varCount, bool onlyOneVar, ulong trueMask)
         {
             var offset = bitIndex * width;
 

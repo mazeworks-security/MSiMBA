@@ -41,7 +41,7 @@ namespace Mba.Utility
                 return;
             }
 
-            if (node is BinaryNode && node is not LshrNode)
+            if (node is BinaryNode)
             {
                 sb.Append("(");
 
@@ -82,7 +82,8 @@ namespace Mba.Utility
                 AstKind.Xor => "^",
                 AstKind.Neg => "~",
                 AstKind.Shl => "<<",
-                AstKind.Ashr => ">>",
+                AstKind.Lshr => ">>",
+                AstKind.Ashr => ">>>",
                 _ => throw new InvalidOperationException($"Unrecognized operator: {kind.ToString()}")
             };
         }

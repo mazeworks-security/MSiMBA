@@ -63,6 +63,8 @@ namespace Mba.Utility
                 case VarNode:
                     mapping[node] = AstClassification.Linear;
                     break;
+                case AshrNode:
+                case LshrNode:
                 case PowerNode:
                     mapping[node] = AstClassification.Nonlinear;
                     break;

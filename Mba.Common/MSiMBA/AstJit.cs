@@ -136,6 +136,7 @@ namespace Mba.Common.MSiMBA
             var reg = obj.Value;
             byte encoding = reg switch
             {
+                Register.RCX => 0x51,
                 Register.RAX => 0x50,
                 Register.RBX => 0x53,
                 Register.RSI => 0x56,
@@ -152,6 +153,7 @@ namespace Mba.Common.MSiMBA
             var reg = obj.Value;
             byte encoding = reg switch
             {
+                Register.RCX => 0x59,
                 Register.RAX => 0x58,
                 Register.RBX => 0x5B,
                 Register.RSI => 0x5E,
@@ -162,7 +164,6 @@ namespace Mba.Common.MSiMBA
             *(ushort*)pagePtr = encoding;
             pagePtr++;
         }
-
 
         private unsafe void PushConst(ulong constant)
         {
@@ -238,6 +239,20 @@ namespace Mba.Common.MSiMBA
                     // Push the result.
                     PushReg(rdi);
                     break;
+                case AstKind.Lshr:
+                    op0();
+                    op1();
+                    PopReg(scratch2);
+                    PopReg(scratch1);
+
+                    PushReg(rcx);
+                    // mov cl, dil
+                    WriteBytes(0x40, 0x88, 0xF9);
+                    Shr();
+                    PopReg(rcx);
+
+                    PushReg(scratch1);
+                    break;
                 case AstKind.Mul:
                     binop(Mul);
                     break;
@@ -264,6 +279,8 @@ namespace Mba.Common.MSiMBA
             }
         }
 
+        // shr rsi, cl
+        private void Shr() => WriteBytes(0x48, 0xD3, 0xEE);
         // imul rsi, rdi
         private void Mul() => WriteBytes(0x48, 0x0F, 0xAF, 0xF7);
         // add rsi, rdi
