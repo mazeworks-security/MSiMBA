@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Mba.Common.Interop;
 
-internal unsafe struct MarshaledString : IDisposable
+public unsafe struct MarshaledString : IDisposable
 {
     public MarshaledString(string? input)
     {

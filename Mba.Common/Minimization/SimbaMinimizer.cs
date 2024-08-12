@@ -17,28 +17,18 @@ namespace Mba.Common.Minimization
         public static unsafe AstNode SimplifyBoolean(IReadOnlyList<VarNode> variables, List<int> resultVector)
         {
             var resultVec = resultVector.Select(x => (ulong)x).ToArray();
+            //var variableCombinations = MultibitSiMBA.GetVariableCombinations(variables.Count);
             var variableCombinations = MultibitSiMBA.GetVariableCombinations(variables.Count);
 
             // Keep track of which variables are demanded by which combination,
             // as well as which result vector idx corresponds to which combination.
             var groupSizes = MultibitSiMBA.GetGroupSizes(variables.Count);
             List<(ulong trueMask, int resultVecIdx)> combToMaskAndIdx = new();
-            for (int i = 0; i < variableCombinations.Count; i++)
+            for (int i = 0; i < variableCombinations.Length; i++)
             {
-                // Fetch the result vector index for this conjunction.
-                // If the coefficient is zero, we can skip it.
-                var comb = variableCombinations[i];
-                var index = comb.Sum(x => groupSizes[x]);
-
-                // Update the mask of true variables.
-                ulong trueMask = 0;
-                foreach (var idx in comb)
-                {
-                    ulong casted = (uint)idx;
-                    trueMask |= (ulong)1 << (ushort)idx;
-                }
-
-                combToMaskAndIdx.Add((trueMask, index));
+                var myMask = variableCombinations[i];
+                var myIndex = MultibitSiMBA.GetGroupSizeIndex(groupSizes, myMask);
+                combToMaskAndIdx.Add((myMask, (int)myIndex));
             }
 
             var varCount = variables.Count;
@@ -47,7 +37,7 @@ namespace Mba.Common.Minimization
             List<int> terms = new();
             fixed (ulong* ptr = &resultVec[0])
             {
-                for (int i = 0; i < variableCombinations.Count; i++)
+                for (int i = 0; i < variableCombinations.Length; i++)
                 {
                     // Fetch the result vector index for this conjunction.
                     // If the coefficient is zero, we can skip it.
@@ -66,7 +56,7 @@ namespace Mba.Common.Minimization
             AstNode result = null;
             foreach(var term in terms)
             {
-                var conj = variableCombinations[term].Select(x => (AstNode)variables[x]).ToList().And();
+                var conj = MultibitSiMBA.ConjunctionFromVarMask(1, variableCombinations[term], variables, null);
                 if (result == null)
                     result = conj;
                 else

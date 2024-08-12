@@ -406,29 +406,18 @@ namespace Mba.Common.MSiMBA
             // Linear combination, where the index can be seen as an index into `variableCombinations`,
             // and the element at that index is a list of terms operating over that boolean combination.
             // Term = coeff*(bitMask&basisExpression).
-            var linearCombinations = new List<List<(ApInt coeff, ApInt bitMask)>>(variableCombinations.Count);
-            for (int i = 0; i < variableCombinations.Count; i++)
+            var linearCombinations = new List<List<(ApInt coeff, ApInt bitMask)>>(variableCombinations.Length);
+            for (int i = 0; i < variableCombinations.Length; i++)
                 linearCombinations.Add(new((int)bitSize));
 
             // Keep track of which variables are demanded by which combination,
             // as well as which result vector idx corresponds to which combination.
             List<(ulong trueMask, int resultVecIdx)> combToMaskAndIdx = new();
-            for (int i = 0; i < variableCombinations.Count; i++)
+            for (int i = 0; i < variableCombinations.Length; i++)
             {
-                // Fetch the result vector index for this conjunction.
-                // If the coefficient is zero, we can skip it.
-                var comb = variableCombinations[i];
-                var index = comb.Sum(x => groupSizes[x]);
-
-                // Update the mask of true variables.
-                ulong trueMask = 0;
-                foreach (var idx in comb)
-                {
-                    ulong casted = (uint)idx;
-                    trueMask |= (ulong)1 << (ushort)idx;
-                }
-
-                combToMaskAndIdx.Add((trueMask, index));
+                var myMask = variableCombinations[i];
+                var myIndex = GetGroupSizeIndex(groupSizes, myMask);
+                combToMaskAndIdx.Add((myMask, (int)myIndex));
             }
 
             bool allZeroes = true;
@@ -447,7 +436,7 @@ namespace Mba.Common.MSiMBA
                         var maskForIndex = multiBit ? (ApInt)1 << bitIndex : moduloMask;
                         // Offset the result vector index such that we are fetching entries for the current bit index.
                         var offset = bitIndex * numCombinations;
-                        for (int i = 0; i < variableCombinations.Count; i++)
+                        for (int i = 0; i < variableCombinations.Length; i++)
                         {
                             // Fetch the result vector index for this conjunction.
                             // If the coefficient is zero, we can skip it.
@@ -589,23 +578,31 @@ namespace Mba.Common.MSiMBA
             return ast;
         }
 
-        public static List<List<int>> GetVariableCombinations(int varCount)
+        public static ulong[] GetVariableCombinations(int varCount)
         {
-            var comb = PyRange(0, varCount).Select(x => new List<int>() { x }).ToList();
-            var _new = varCount;
+            var numEntries = (1 << (ushort)varCount) - 1;
+            var outputs = new ulong[numEntries];
+            for (int i = 0; i < numEntries; i++)
+                outputs[i] = 0;
+            for (int i = 0; i < varCount; i++)
+                outputs[i] = 1u << (ushort)i;
 
-            foreach (var count in PyRange(1, varCount))
+            int combCount = varCount;
+            var _new = varCount;
+            for (int count = 1; count < varCount; count++)
             {
-                var size = comb.Count;
+                var size = combCount;
                 var nnew = 0;
                 var from = size - _new;
-                var slice = comb.GetRange(from, size - from);
-                foreach (var e in slice)
+                for (int ei = from; ei < from + (size - from); ei++)
                 {
-                    var r = PyRange(e.Last() + 1, varCount);
-                    foreach (var v in r)
+                    var e = outputs[ei];
+                    var lastIdx = 64 - BitOperations.LeadingZeroCount((ulong)e);
+                    for (int v = lastIdx; v < varCount; v++)
                     {
-                        comb.Add(e.Concat(new List<int>() { v }).ToList());
+                        outputs[combCount] |= (1u << (ushort)v);
+                        outputs[combCount] |= e;
+                        combCount += 1;
                         nnew += 1;
                     }
                 }
@@ -613,7 +610,21 @@ namespace Mba.Common.MSiMBA
                 _new = nnew;
             }
 
-            return comb;
+            return outputs;
+        }
+
+        public static uint GetGroupSizeIndex(List<int> groupSizes, ulong varMask)
+        {
+            uint sum = 0;
+            while (varMask != 0)
+            {
+                var lsb = BitOperations.TrailingZeroCount(varMask);
+                sum += (uint)groupSizes[lsb];
+
+                varMask ^= (1ul << (ushort)lsb);
+            }
+
+            return sum;
         }
 
         public static unsafe void SubtractCoeff(ApInt moduloMask, ApInt* pResultVec, ushort bitIndex, ApInt coeff, int firstStart, int width, int varCount, bool onlyOneVar, ulong trueMask)
@@ -651,7 +662,7 @@ namespace Mba.Common.MSiMBA
         }
 
         // Convert a N-bit result vector into a linear combination.
-        private (AstNode expr, int termCount) SimplifyMultiBitGeneric(ApInt constantOffset, List<List<int>> variableCombinations, List<List<(ApInt coeff, ApInt bitMask)>> linearCombinations)
+        private (AstNode expr, int termCount) SimplifyMultiBitGeneric(ApInt constantOffset, ulong[] variableCombinations, List<List<(ApInt coeff, ApInt bitMask)>> linearCombinations)
         {
             Log("Initial solution: ");
             if (constantOffset != 0)
@@ -679,7 +690,7 @@ namespace Mba.Common.MSiMBA
                 {
                     if (coeff == 0 || mask == 0)
                         continue;
-                    var conj = Conjunction(coeff, varComb, mask);
+                    var conj = ConjunctionFromVarMask(coeff, varComb, mask);
                     Log(conj);
                 }
             }
@@ -691,7 +702,7 @@ namespace Mba.Common.MSiMBA
             return (final, GetCost(final, false));
         }
 
-        private AstNode TryRefineMultibit(ApInt constantOffset, List<List<int>> variableCombinations, List<Dictionary<ApInt, ApInt>> linearCombinations)
+        private AstNode TryRefineMultibit(ApInt constantOffset, ulong[] variableCombinations, List<Dictionary<ApInt, ApInt>> linearCombinations)
         {
             List<List<AstNode>> extractedTerms = new();
             for (int i = 0; i < linearCombinations.Count; i++)
@@ -720,7 +731,7 @@ namespace Mba.Common.MSiMBA
                     if (mask == 0)
                         continue;
 
-                    var newTerm = Conjunction(coeff, variableCombinations[i], mask);
+                    var newTerm = ConjunctionFromVarMask(coeff, variableCombinations[i], mask);
                     if (final == null)
                         final = newTerm;
                     else
@@ -735,7 +746,7 @@ namespace Mba.Common.MSiMBA
         }
 
         // Given a linear combination where every node is using the same basis expression, try to find the simplest possible representation.
-        private (ApInt newConstantOffset, List<AstNode> newTerms) TryRefineMultibitEntry(ApInt constantOffset, List<int> varComb, Dictionary<ApInt, ApInt> coeffToMask)
+        private (ApInt newConstantOffset, List<AstNode> newTerms) TryRefineMultibitEntry(ApInt constantOffset, ulong varComb, Dictionary<ApInt, ApInt> coeffToMask)
         {
             refiner.TryReduceMasks(coeffToMask);
 
@@ -751,7 +762,7 @@ namespace Mba.Common.MSiMBA
 
                 // Add a new XOR term.
                 var xorConst = new ConstNode(xor.xorMask, ast.BitSize);
-                var xorNode = new XorNode(xorConst, Conjunction(1, varComb, null));
+                var xorNode = new XorNode(xorConst, ConjunctionFromVarMask(1, varComb, null));
                 var newTerm = new MulNode(new ConstNode(xor.coeff, bitSize), xorNode);
                 newTerms.Add(newTerm);
             };
@@ -767,7 +778,7 @@ namespace Mba.Common.MSiMBA
 
                 // Add a new OR term.
                 // If the mask is -1 then we ignore it.
-                var conj = Conjunction(1, varComb, null);
+                var conj = ConjunctionFromVarMask(1, varComb, null);
                 AstNode orNode = null;
                 if (or.orMask != moduloMask)
                 {
@@ -789,7 +800,7 @@ namespace Mba.Common.MSiMBA
                 if (coeff == null || coeff.Value == 0)
                     return;
 
-                var conj = Conjunction(coeff.Value, varComb, null);
+                var conj = ConjunctionFromVarMask(coeff.Value, varComb, null);
                 newTerms.Add(conj);
             };
 
@@ -797,7 +808,7 @@ namespace Mba.Common.MSiMBA
             processXor(refiner.TrySimplifyXor(constantOffset, coeffToMask));
 
             // Try to identify whole instances of variables.
-            var maybeIsolated = refiner.TryIsolateSingleVariableConjunction(varComb, coeffToMask);
+            var maybeIsolated = refiner.TryIsolateSingleVariableConjunction(coeffToMask);
             processIsolation(maybeIsolated);
 
             // If we succeeded in isolating out a whole term(no bit mask), try again to factor out a XOR by constant.
@@ -830,7 +841,7 @@ namespace Mba.Common.MSiMBA
             return (constantOffset, newTerms);
         }
 
-        private (ApInt newConstantOffset, List<AstNode> newTerms)? TryDecomposeMultibitBases(ApInt constantOffset, List<int> varComb, List<AstNode> newTerms, Dictionary<ApInt, ApInt> coeffToMask)
+        private (ApInt newConstantOffset, List<AstNode> newTerms)? TryDecomposeMultibitBases(ApInt constantOffset, ulong varComb, List<AstNode> newTerms, Dictionary<ApInt, ApInt> coeffToMask)
         {
             // Convert the current set to a linear combination of bitwise functions.
             var firstSolution = GetLinearComb(0, varComb, newTerms, coeffToMask);
@@ -891,7 +902,7 @@ namespace Mba.Common.MSiMBA
             simpl = new AddNode(subtractBy, simpl);
 
             // Compute the basis expression ast.
-            var basis = Conjunction(1, varComb);
+            var basis = ConjunctionFromVarMask(1, varComb, null);
 
             // Replace the substituted variable with the basis. TODO: Stop using string parsing.
             var formatted = simpl.ToString().Replace(subst.Name, basis.ToString());
@@ -967,7 +978,7 @@ namespace Mba.Common.MSiMBA
             return (constantOffset, newTerms);
         }
 
-        private AstNode GetLinearComb(ApInt constant, List<int> varComb, List<AstNode> newTerms, Dictionary<ApInt, ApInt> coeffToMask)
+        private AstNode GetLinearComb(ApInt constant, ulong varComb, List<AstNode> newTerms, Dictionary<ApInt, ApInt> coeffToMask)
         {
             // TODO: Constant support.
             Debug.Assert(constant == 0);
@@ -981,7 +992,7 @@ namespace Mba.Common.MSiMBA
                 if (coeff == 0 || mask == 0)
                     continue;
 
-                var t = Conjunction(coeff, varComb, mask);
+                var t = ConjunctionFromVarMask(coeff, varComb, mask);
                 result = Add(result, t);
             }
 
@@ -1086,7 +1097,7 @@ namespace Mba.Common.MSiMBA
 
 
         // Convert a 1-bit result vector into a linear combination.
-        private (AstNode expr, int termCount) SimplifyOneBitGeneric(List<List<int>> variableCombinations, List<List<(ApInt coeff, ApInt bitMask)>> linearCombinations)
+        private (AstNode expr, int termCount) SimplifyOneBitGeneric(ulong[] variableCombinations, List<List<(ApInt coeff, ApInt bitMask)>> linearCombinations)
         {
             AstNode expr = null;
             int termCount = 0;
@@ -1101,7 +1112,7 @@ namespace Mba.Common.MSiMBA
                 var entry = entries[0];
 
                 // Construct the term.
-                var term = Conjunction(entry.coeff, variableCombinations[i]);
+                var term = ConjunctionFromVarMask(entry.coeff, variableCombinations[i], null);
                 if (expr == null)
                     expr = term;
                 else
@@ -2142,6 +2153,32 @@ namespace Mba.Common.MSiMBA
             return constant;
         }
 
+        private AstNode ConjunctionFromVarMask(ApInt coeff, ulong varMask, ApInt? bitMask)
+            => ConjunctionFromVarMask(coeff, varMask, variables, bitMask);
+
+        public static AstNode ConjunctionFromVarMask(ApInt coeff, ulong varMask, IReadOnlyList<VarNode> variables, ApInt? bitMask)
+        {
+            Debug.Assert(variables.Count > 0);
+            if (coeff == 0)
+                return null;
+
+            AstNode conj = null;
+            while (varMask != 0)
+            {
+                var lsb = BitOperations.TrailingZeroCount(varMask);
+                var op = variables[lsb];
+                if (conj == null)
+                    conj = op;
+                else
+                    conj = new AndNode(conj, op);
+
+                varMask ^= (1ul << (ushort)lsb);
+            }
+
+            if (bitMask != null)
+                conj = new AndNode(new ConstNode(bitMask.Value, 64), conj);
+            return Term(conj, coeff, conj.BitSize);
+        }
 
         private AstNode Conjunction(ApInt coeff, IReadOnlyList<int> variables, ApInt? mask = null)
         {
@@ -2176,6 +2213,9 @@ namespace Mba.Common.MSiMBA
         }
 
         private AstNode Term(AstNode bitwise, ApInt coeff)
+            => Term(bitwise, coeff, bitSize);
+
+        private static AstNode Term(AstNode bitwise, ApInt coeff, uint bitSize)
         {
             if (coeff == 1)
                 return bitwise;

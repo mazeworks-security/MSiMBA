@@ -17,7 +17,7 @@ bool processDataset = false;
 string inputText = null;
 
 var printHelp = () =>
-{
+{ 
     Console.WriteLine("Usage: Simplifier.exe");
     Console.WriteLine("Command line input not preceded by the option indicators below are considered to be input expressions. Only one input expression is accepted.");
     Console.WriteLine("Command line options:");
@@ -26,7 +26,7 @@ var printHelp = () =>
     Console.WriteLine("    -z:        enable a check for valid simplification using Z3");
     Console.WriteLine("    -cl:       enable a check for input expressions being linear MBAs");
     Console.WriteLine("    -csl:      enable a check for input expressions being semi-linear MBAs");
-    Console.WriteLine("    -linear:   disable semi-linear simplification methods (default is true)");
+    Console.WriteLine("    -linear:   disable semi-linear simplification methods (default is false)");
     Console.WriteLine("    -dataset:  process the MBA dataset at the provided path");
 };
 
@@ -122,7 +122,7 @@ if (checkLinear || checkSemiLinear)
 // which will only output a correct result for linear MBAs.
 var simplified = MultibitSiMBA.Run(input, alreadySplit: false, multibit: !simplifyAsLinearMba);
 
-Console.WriteLine($"Simplified to: {simplified}\n");
+Console.WriteLine($"Simplified to: {simplified}\n\nwith cost: {MultibitSiMBA.GetCost(simplified, false, (ulong)ModuloReducer.GetMask(bitWidth))}");
 
 if (!proveEquivalence)
     return;
