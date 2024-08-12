@@ -318,7 +318,7 @@ namespace Mba.Common.MSiMBA
             }
         }
 
-        public ApInt? TryIsolateSingleVariableConjunction(List<int> varComb, Dictionary<ApInt, ApInt> coeffToMask)
+        public ApInt? TryIsolateSingleVariableConjunction(Dictionary<ApInt, ApInt> coeffToMask)
         {
             // If there is only one entry, and it's mask is negative one, we can isolate the variable immediately.
             if (coeffToMask.Count == 1)
