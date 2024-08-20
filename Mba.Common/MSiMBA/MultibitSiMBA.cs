@@ -2176,7 +2176,7 @@ namespace Mba.Common.MSiMBA
             }
 
             if (bitMask != null)
-                conj = new AndNode(new ConstNode(bitMask.Value, 64), conj);
+                conj = new AndNode(new ConstNode(bitMask.Value, variables[0].BitSize), conj);
             return Term(conj, coeff, conj.BitSize);
         }
 
