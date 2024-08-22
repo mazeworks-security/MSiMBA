@@ -86,6 +86,8 @@ namespace Mba.Common.MSiMBA
         // If enabled, we try to find a simpler representation of grouping of basis expressions.
         private readonly bool tryDecomposeMultiBitBases;
 
+        private readonly Action<ulong[], ulong>? resultVectorHook;
+
         private readonly ApInt moduloMask = 0;
 
         // Number of combinations of input variables(2^n), for a single bit index.
@@ -108,13 +110,13 @@ namespace Mba.Common.MSiMBA
 
         private readonly bool dbg = false;
 
-        public static AstNode Run(AstNode ast, bool alreadySplit = false, bool multibit = false, bool tryDecomposeMultiBitBases = false)
+        public static AstNode Run(AstNode ast, bool alreadySplit = false, bool multibit = false, bool tryDecomposeMultiBitBases = false, Action<ulong[], ApInt>? resultVectorHook = null)
         {
             var variables = InputVariableUtility.GetVars(ast);
-            return new MultibitSiMBA(ast, variables, ast.BitSize, true, multibit, tryDecomposeMultiBitBases).Simplify(false, alreadySplit);
+            return new MultibitSiMBA(ast, variables, ast.BitSize, true, multibit, tryDecomposeMultiBitBases, resultVectorHook).Simplify(false, alreadySplit);
         }
 
-        public MultibitSiMBA(AstNode ast, IReadOnlyList<VarNode> variables, uint bitSize, bool refine = true, bool multiBit = false, bool tryDecomposeMultiBitBases = true)
+        public MultibitSiMBA(AstNode ast, IReadOnlyList<VarNode> variables, uint bitSize, bool refine = true, bool multiBit = false, bool tryDecomposeMultiBitBases = true, Action<ulong[], ApInt>? resultVectorHook = null)
         {
             int limit = 25;
             if (variables.Count > limit)
@@ -126,6 +128,7 @@ namespace Mba.Common.MSiMBA
             this.refine = refine;
             this.multiBit = multiBit;
             this.tryDecomposeMultiBitBases = tryDecomposeMultiBitBases;
+            this.resultVectorHook = resultVectorHook;
             moduloMask = (ApInt)ModuloReducer.GetMask(bitSize);
             groupSizes = GetGroupSizes(variables.Count);
             numCombinations = (ApInt)Math.Pow(2, variables.Count);
@@ -133,11 +136,14 @@ namespace Mba.Common.MSiMBA
 
             // If multi-bit simba is requested, and the result vector is uniform across all bit indices,
             // we can disable multi-bit simplification and treat the function as a classical linear MBA.
-            if (multiBit && IsLinearResultVector(moduloMask, bitSize, resultVector, variables, numCombinations))
+            if (multiBit && IsLinearResultVector(moduloMask, bitSize, resultVector, variables, numCombinations) && resultVectorHook == null)
             {
                 this.multiBit = false;
                 resultVector = BuildResultVector(moduloMask, variables, ast, false, numCombinations);
             }
+
+            if (resultVectorHook != null)
+                resultVectorHook(resultVector, numCombinations);
 
             refiner = new MultibitRefiner(bitSize, moduloMask);
         }
@@ -491,6 +497,7 @@ namespace Mba.Common.MSiMBA
         // Try to find a single boolean term fitting the result vector.
         private AstNode? AsPureBoolean()
         {
+            return null;
             var rv = resultVector;
 
             // Keep track of the bits being demanded of each base expression.
@@ -698,6 +705,8 @@ namespace Mba.Common.MSiMBA
             // We have a near-optimal linear combination of conjunctions.
             // Try to apply several more refinements, that are simpler but don't necessarily only result in a linear combinaton of conjunctions(e.g. we now allow XORs).
             var final = TryRefineMultibit(constantOffset, variableCombinations, results);
+            if (final == null)
+                return (new ConstNode(0ul, bitSize), 0);
 
             return (final, GetCost(final, false));
         }

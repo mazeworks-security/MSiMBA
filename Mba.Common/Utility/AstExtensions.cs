@@ -30,5 +30,16 @@ namespace Mba.Common.Utility
 
             return initial;
         }
+
+        public static AstNode Add(this List<AstNode> nodes)
+        {
+            var initial = nodes[0];
+            for (int i = 1; i < nodes.Count; i++)
+            {
+                initial = new AddNode(initial, nodes[i]);
+            }
+
+            return initial;
+        }
     }
 }
