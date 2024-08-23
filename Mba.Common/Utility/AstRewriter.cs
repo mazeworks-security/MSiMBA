@@ -13,7 +13,6 @@ namespace Mba.Common.Utility
         public static AstNode ChangeBitwidth(AstNode node, uint newWidth)
         {
             var opcode = node.Kind;
-
             var binop = () => AstNode.Binop(opcode, ChangeBitwidth(node.Children[0], newWidth), ChangeBitwidth(node.Children[1], newWidth));
 
             return opcode switch
