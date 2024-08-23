@@ -11,6 +11,8 @@ namespace Mba.Common.Minimization
 {
     public static class BooleanSimplifier
     {
+        public static bool UseEspresso = true;
+
         public static AstNode GetBitwise(IReadOnlyList<VarNode> variables, List<int> resultVector, bool negate = false)
         {
             // If requested, negate the result vector to find a negated expression.
@@ -29,8 +31,12 @@ namespace Mba.Common.Minimization
                 return FromTruthTable(variables, resultVector);
             }
 
-            // Otherwise use Espresso to compute a semi optimal version of the boolean function.
             var xnf = SimbaMinimizer.SimplifyBoolean(variables, resultVector);
+            if(!UseEspresso)
+                return xnf;
+
+            // Otherwise use espresso to compute a minimal DNF representation,
+            // then compare and select the solution with the lowest cost.
             var dnf = EspressoMinimizer.SimplifyBoolean(resultVector, variables).ast;
 
             var c1 = MultibitSiMBA.GetCost(xnf, false, 1);
