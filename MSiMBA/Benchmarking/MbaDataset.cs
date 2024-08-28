@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mba.Testing.Evaluation
+namespace MSiMBA.Benchmarking
 {
     /// <summary>
     /// Class representing an MBA expression within a given dataset.

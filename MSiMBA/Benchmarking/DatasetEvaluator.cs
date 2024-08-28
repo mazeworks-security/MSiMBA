@@ -3,7 +3,6 @@ using Mba.Common.Minimization;
 using Mba.Common.MSiMBA;
 using Mba.Parsing;
 using Mba.SMT;
-using Mba.Testing.Evaluation;
 using Mba.Utility;
 using Microsoft.Z3;
 using System;
@@ -13,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Simplifier
+namespace MSiMBA.Benchmarking
 {
     public record SimplifiedExpression(string Result, double MsTaken);
 

@@ -5,14 +5,14 @@ MSiMBA is a tool designed for the simplification of mixed boolean-arithmetic exp
 The details of this algorithm can be found in the [paper](https://arxiv.org/abs/2406.10016) "*Deobfuscation of Semi-Linear Mixed Boolean-Arithmetic Expressions*".
 
 # Using MSiMBA
-MSiMBA provides a single executable, `Simplifier.exe` for simplifying MBA expressions. To simplify a single expression, use:
+MSiMBA provides a single executable, `MSiMBA.exe` for simplifying MBA expressions. To simplify a single expression, use:
 ```
-Simplifier.exe "expr"
+MSiMBA.exe "expr"
 ```
 
 As an example:
 ```
-$ Simplifier.exe "7471873370*~(16832296021645948&y) + 3735936685*16832296021645948 + 3735936685*y + 7471922744 - 49374"
+$ MSiMBA.exe "7471873370*~(16832296021645948&y) + 3735936685*16832296021645948 + 3735936685*y + 7471922744 - 49374"
 
 Expression: (((((7471873370*(~(16832296021645948&y)))+(3735936685*16832296021645948))+(3735936685*y))+7471922744)-49374)
 
@@ -35,11 +35,11 @@ By default, MSiMBA runs the semi-linear simplification algorithm on all input ex
 If the `-csl` option is used, MSiMBA will check if input expression is semi-linear, and report an error if not. Similarly, `-cl` can be used to enable a check for linearity.
 
 # Datasets and reproduction of experiments
-The datasets can be found in the `Datasets` directory of `Simplifier`. We include all datasets from the paper, aswell as the 5/6 variable datasets from the SiMBA repository.
+The datasets can be found in the `Datasets` directory of `MSiMBA`. We include all datasets from the paper, aswell as the 5/6 variable datasets from the SiMBA repository.
 
 To process a dataset with MSiMBA, use:
 ```
-Simplifier.exe -dataset "path/to/dataset"
+MSiMBA.exe -dataset "path/to/dataset"
 ```
 
 MSiMBA must be built in release mode when reproducing the experiments. After processing the dataset, MSiMBA will output runtime and quality statistics. 

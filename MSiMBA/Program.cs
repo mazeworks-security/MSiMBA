@@ -5,7 +5,7 @@ using Mba.Parsing;
 using Mba.SMT;
 using Mba.Utility;
 using Microsoft.Z3;
-using Simplifier;
+using MSiMBA.Benchmarking;
 
 bool printUsage = false;
 uint bitWidth = 64;
