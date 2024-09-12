@@ -472,9 +472,46 @@ namespace Mba.Common.MSiMBA
 
         // TODO: When there is flexibility in the bitmask, consider the signed/unsigned representation and pick the 
         // most readable version.
+
         public ApInt FindMinimalMask(ApInt coeff, ApInt oldMask)
         {
             return oldMask;
+        }
+
+        public ApInt FindMinimalCoeff(ApInt coeff, ApInt mask)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Skip this bit if it's not set in the coefficient.
+                var bitMask = (ApInt)1 << i;
+                if ((coeff & bitMask) == 0)
+                    continue;
+
+                var negated = coeff & ~bitMask;
+                if (!CanChangeCoefficientTo(coeff, negated, mask))
+                    continue;
+                coeff = negated;
+            }
+
+            return coeff;
+        }
+
+        public ApInt FindMinimalMask2(ApInt coeff, ApInt mask)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Skip this bit if it's not set in the coefficient.
+                var bitMask = (ApInt)1 << i;
+                if ((mask & bitMask) == 0)
+                    continue;
+
+                var negated = mask & ~bitMask;
+                if (!CanChangeMaskTo(coeff, mask, negated))
+                    continue;
+                mask = negated;
+            }
+
+            return mask;
         }
 
         public bool CanChangeCoefficientTo(ulong oldCoeff, ulong newCoeff, ulong andMask)
