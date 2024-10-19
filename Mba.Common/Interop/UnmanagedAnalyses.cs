@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Mba.Common.Interop
 {
-    internal class UnmanagedAnalyses
+    public class UnmanagedAnalyses
     {
         [DllImport("Mba.FFI")]
         [SuppressGCTransition]
