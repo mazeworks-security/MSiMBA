@@ -45,7 +45,7 @@ MSiMBA.exe -dataset "path/to/dataset"
 MSiMBA must be built in release mode when reproducing the experiments. After processing the dataset, MSiMBA will output runtime and quality statistics. 
 
 # Building MSiMBA
-Building MSiMBA requires Visual Studio 2022 w/ ClangCL. Note that only Windows is supported.
+Building MSiMBA requires .NET 8 and Visual Studio 2022 w/ ClangCL. Note that only Windows is supported.
 
 To build MSiMBA:
 - Clone the repository, using the `--recursive` flag to pull submodules (Espresso).
