@@ -38,6 +38,35 @@ FFI_EXPORT bool CanChangeCoeff(uint64_t oldCoeff, uint64_t newCoeff, uint64_t in
 	return true;
 }
 
+FFI_EXPORT uint64_t MinimizeCoeff(uint64_t coeff, uint64_t bitMask, uint64_t outMask)
+{
+	uint64_t outCoeff = coeff;
+
+	size_t iter = coeff;
+	while (iter)
+	{
+		auto pos = std::countr_zero(iter);
+		iter &= ~(1ull << pos);
+
+		// Shift 1 into the current bit index.
+		auto value = (uint64_t)1 << pos;
+
+		auto negated = outMask & (outCoeff & ((~value)));
+
+		auto eval1 = outMask & (negated * bitMask);
+		auto eval2 = outMask & (outCoeff * bitMask);
+		if (eval1 != eval2)
+			continue;
+
+		//if (!CanChangeCoeff(outCoeff, negated, inMask, outMask))
+		//	continue;
+
+		outCoeff = negated;
+	}
+
+	return outCoeff;
+}
+
 // Check if we can remove the bit mask
 FFI_EXPORT bool CanRemoveMask(uint64_t coeff, uint64_t and_mask, uint64_t out_mask) {
 	size_t iter = out_mask;

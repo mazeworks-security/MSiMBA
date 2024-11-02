@@ -76,9 +76,11 @@ namespace Mba.Common.MSiMBA
             SimplifyKnownZeroes(coeffToMask);
 
             // Try to reduce as many coefficients as possible down to -1.
+            /*
             var changed = true;
             while (changed)
                 changed = TryReduceCoefficients(coeffToMask);
+            */
 
             // Try to reduce the number of terms again.
             TryReduceTermCount(coeffToMask);
@@ -478,12 +480,36 @@ namespace Mba.Common.MSiMBA
             return oldMask;
         }
 
-        public ApInt FindMinimalCoeff(ApInt coeff, ApInt mask)
+        public ApInt FindUndemandedCoeffBits(ApInt coeff, ApInt mask, ApInt offset)
+        {
+            ApInt undemanded = 0;
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Skip this bit if it's not set in the coefficient.
+                var bitMask = (ApInt)1 << i;
+
+                var negated = coeff & ~bitMask;
+                if ((coeff & bitMask) == 0) // If this bit was not set, instead set it. Effectively we are inverting the bit.
+                    negated = coeff | bitMask;
+
+                if (!CanChangeCoeffToSlow(coeff, negated, mask, offset))
+                    continue;
+
+                // If we can change this bit, mark it as undemanded.
+                undemanded |= bitMask;
+            }
+
+            return coeff;
+        }
+
+
+        public ApInt FindMinimalCoeff(ApInt coeff, ApInt mask, ApInt offset)
         {
             for (ushort i = 0; i < bitSize; i++)
             {
                 // Skip this bit if it's not set in the coefficient.
                 var bitMask = (ApInt)1 << i;
+
                 if ((coeff & bitMask) == 0)
                     continue;
 
@@ -496,7 +522,45 @@ namespace Mba.Common.MSiMBA
             return coeff;
         }
 
-        public ApInt FindMinimalMask2(ApInt coeff, ApInt mask)
+        public ApInt FindMinimalCoeffSlow(ApInt coeff, ApInt mask, ApInt offset)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Skip this bit if it's not set in the coefficient.
+                var bitMask = (ApInt)1 << i;
+
+                if ((coeff & bitMask) == 0)
+                    continue;
+
+                var negated = coeff & ~bitMask;
+                if (!CanChangeCoeffToSlow(coeff, negated, mask, offset))
+                    continue;
+                coeff = negated;
+            }
+
+            return coeff;
+        }
+
+        public ApInt FindMaximalCoeff(ApInt coeff, ApInt mask)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Skip this bit if it's not set in the coefficient.
+                var bitMask = (ApInt)1 << i;
+
+                if ((coeff & bitMask) != 0)
+                    continue;
+
+                var negated = coeff | bitMask;
+                if (!CanChangeCoefficientTo(coeff, negated, mask))
+                    continue;
+                coeff = negated;
+            }
+
+            return coeff;
+        }
+
+        public ApInt FindMinimalMask2(ApInt coeff, ApInt mask, ApInt offset = 0)
         {
             for (ushort i = 0; i < bitSize; i++)
             {
@@ -506,12 +570,28 @@ namespace Mba.Common.MSiMBA
                     continue;
 
                 var negated = mask & ~bitMask;
-                if (!CanChangeMaskTo(coeff, mask, negated))
+                if (!CanChangeMaskToSlow(coeff, mask, negated, offset))
                     continue;
                 mask = negated;
             }
 
             return mask;
+        }
+
+        public ulong MinimizeCoeffOptimal(ulong coeff, ushort bitIdx)
+        {
+            return coeff & (moduloMask >> bitIdx);
+            // If the bit idx is 0, then the all bits are dead.
+            // If the bit idx is 1, then the upper 63 are dead
+            // (64 - 1)
+            // 
+
+            // Say our bit idx is 16... the upper 48 bits(140737488355328) are bit
+        }
+
+        public ulong MinimizeCoeff(ulong coeff, ulong inMask)
+        {
+           return UnmanagedAnalyses.MinimizeCoeff(coeff, inMask, moduloMask);
         }
 
         public bool CanChangeCoefficientTo(ulong oldCoeff, ulong newCoeff, ulong andMask)
@@ -534,6 +614,40 @@ namespace Mba.Common.MSiMBA
 
                 var op1 = moduloMask & (coeff * (value & oldMask));
                 var op2 = moduloMask & (coeff * (value & newMask));
+                if (op1 != op2)
+                    return false;
+            }
+
+            return true;
+        }
+
+        // Returns true if the expression is equivalent with the bitmask removed.
+        public bool CanChangeMaskToSlow(ApInt coeff, ApInt oldMask, ApInt newMask, ApInt offset = 0)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Shift 1 into the current bit index.
+                var value = (ApInt)1 << i;
+
+                var op1 = moduloMask & ((coeff * (value & oldMask) + offset));
+                var op2 = moduloMask & ((coeff * (value & newMask)) + offset);
+                if (op1 != op2)
+                    return false;
+            }
+
+            return true;
+        }
+
+        // Returns true if the expression is equivalent with the bitmask removed.
+        public bool CanChangeCoeffToSlow(ApInt oldCoeff, ApInt newCoeff, ApInt mask, ApInt offset = 0)
+        {
+            for (ushort i = 0; i < bitSize; i++)
+            {
+                // Shift 1 into the current bit index.
+                var value = (ApInt)1 << i;
+
+                var op1 = moduloMask & ((oldCoeff * (value & mask)) + offset);
+                var op2 = moduloMask & ((newCoeff * (value & mask)) + offset);
                 if (op1 != op2)
                     return false;
             }

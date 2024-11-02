@@ -11,6 +11,10 @@ namespace Mba.Common.Interop
     {
         [DllImport("Mba.FFI")]
         [SuppressGCTransition]
+        public unsafe static extern ulong MinimizeCoeff(ulong coeff, ulong inMask, ulong outMask);
+
+        [DllImport("Mba.FFI")]
+        [SuppressGCTransition]
         [return: MarshalAs(UnmanagedType.U1)]
         public unsafe static extern bool CanChangeCoeff(ulong old_coeff, ulong new_coeff, ulong in_mask, ulong out_mask);
 
