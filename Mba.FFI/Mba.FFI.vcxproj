@@ -30,6 +30,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\Groebner;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -54,6 +57,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Groebner\gb.h" />
+    <ClInclude Include="Groebner\monom.h" />
+    <ClInclude Include="Groebner\order.h" />
+    <ClInclude Include="Groebner\poly.h" />
+    <ClInclude Include="Groebner\polyfuncs.h" />
+    <ClInclude Include="Groebner\zdd.h" />
+    <ClInclude Include="Groebner\zddcache.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

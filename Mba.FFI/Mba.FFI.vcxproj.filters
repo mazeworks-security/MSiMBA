@@ -5,8 +5,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Groebner">
+      <UniqueIdentifier>{efa8c077-fa39-4558-bf1a-e61319eb7c9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Groebner\gb.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\monom.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\order.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\poly.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\polyfuncs.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\zdd.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
+    <ClInclude Include="Groebner\zddcache.h">
+      <Filter>Groebner</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
