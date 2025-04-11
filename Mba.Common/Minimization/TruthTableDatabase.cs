@@ -48,40 +48,6 @@ namespace Mba.Common.Minimization
             return Deserialize(buffer, vars, (int)start);
         }
 
-        /*
-        private static unsafe AstNode ParseBinaryBooleanFunc(IReadOnlyList<VarNode> vars, byte* bytes, ref uint i)
-        {
-            byte opcode = bytes[i];
-            i += 1;
-
-            var binop = (AstKind opcode, ref uint i)
-                => AstNode.Binop(opcode, ParseBinaryBooleanFunc(vars, bytes, ref i), ParseBinaryBooleanFunc(vars, bytes, ref i));
-
-            switch (opcode)
-            {
-                case 0:
-                    ulong constant = *(ulong*)&bytes[i];
-                    return new ConstNode(constant, vars[0].BitSize);
-                case 2:
-                    byte idx = bytes[i];
-                    i += 1;
-                    return vars[idx];
-                case 8:
-                    return binop(AstKind.And, ref i);
-                case 9:
-                    return binop(AstKind.Or, ref i);
-                case 10:
-                    return binop(AstKind.Xor, ref i);
-                case 11:
-                    var a = ParseBinaryBooleanFunc(vars, bytes, ref i);
-                    return new NegNode(a);
-                // Other operators (add, mul, pow) will not be present in serialized binary truth tables.
-                default:
-                    throw new InvalidOperationException($"Unrecognized opcode: {opcode}");
-            }
-        }
-        */
-
         private static AstNode Deserialize(byte[] buffer, IReadOnlyList<VarNode> variables, int offset)
         {
             var id = buffer[offset];
