@@ -7,6 +7,13 @@
 #include <bit>
 #include <chrono>
 
+#include "monom.h"
+#include "poly.h"
+#include "zdd.h"
+#include "gb.h"
+
+using namespace symbsat;
+
 #define FFI_EXPORT extern "C" __declspec(dllexport)
 
 typedef uint64_t u64_4 __attribute__((ext_vector_type(4)));
@@ -150,4 +157,100 @@ FFI_EXPORT void SimplifyDisjointSumMultiply(CoeffWithMask* coeffsWithMasks, int 
 	}
 
 	return;
+}
+
+template <class Monomial>
+void DeserializeSystem(uint32_t* in_buffer, std::vector<Poly<Monomial>>& F)
+{
+	// Parse the number of polynomials.
+	uint32_t poly_count = *in_buffer;
+	in_buffer++;
+
+	// Parse all of the polynomials.
+	for (uint32_t _ = 0; _ < poly_count; _++)
+	{
+		// Parse the number of monomials in this poly.
+		uint32_t monom_count = *in_buffer;
+		in_buffer++;
+
+		// Parse the monomial
+		std::vector<Monomial> monomials;
+		for (int i = 0; i < monom_count; i++)
+		{
+			auto mask = *in_buffer;
+			in_buffer++;
+
+			auto m = Monomial(0);
+			m.mVars = mask;
+
+			monomials.push_back(m);
+		}
+
+		F.push_back(Poly<Monomial>(monomials));
+	}
+}
+
+// Input format: Same version
+// struct Gb {uint32_t poly_count; Poly polys[poly_count]};
+// struct Poly { uint32_t monom_count; uint32_t monoms[monom_count] };
+template <class Monomial>
+std::pair<uint32_t, uint32_t*> SerializeSystem(std::vector<Poly<Monomial>>& result)
+{
+	size_t word_size = 1;
+	for (auto p : result)
+	{
+		// Allocate a u32 for the monomial
+		word_size += 1;
+		word_size += p.mMonoms.size();
+	}
+
+	word_size *= 4;
+	uint32_t* buffer = (uint32_t*)malloc(word_size);
+	uint32_t* out_ptr = buffer;
+	*out_ptr = result.size();
+	out_ptr++;
+	for (auto p : result)
+	{
+		// Allocate a u32 for the monomial
+		*out_ptr = p.mMonoms.size();
+		out_ptr++;
+		for (auto m : p.mMonoms)
+		{
+			*out_ptr = m.mVars.to_ulong();
+			out_ptr++;
+		}
+	}
+
+	return { word_size, buffer };
+}
+
+// Input format: Same version
+// struct Gb {uint32_t poly_count; Poly polys[poly_count]};
+// struct Poly { uint32_t monom_count; uint32_t monoms[monom_count] };
+template <class Monomial>
+std::pair<uint32_t, uint32_t*> CreateGb(uint32_t* in_buffer, size_t num_vars)
+{
+	// Parse all of the polynomials.
+	std::vector<Poly<Monomial>> F;
+	DeserializeSystem<Monomial>(in_buffer, F);
+
+	// Construct a groebner basis
+	auto result = buchberger(F, num_vars);
+
+	return SerializeSystem(result);
+}
+
+
+FFI_EXPORT uint32_t* GetGroebnerBasis(uint32_t num_vars, uint32_t* in_buffer, uint32_t* out_size)
+{
+	std::pair<uint32_t, uint32_t*> result;
+	result = CreateGb<Monom<32>>(in_buffer, num_vars);
+
+	*out_size = result.first;
+	return result.second;
+}
+
+FFI_EXPORT void FreeGroebnerBasis(void* buffer)
+{
+	free(buffer);
 }

@@ -4,6 +4,12 @@ MSiMBA is a tool designed for the simplification of mixed boolean-arithmetic exp
 
 The details of this algorithm can be found in the [paper](https://arxiv.org/abs/2406.10016) "*Deobfuscation of Semi-Linear Mixed Boolean-Arithmetic Expressions*".
 
+# Status
+
+MSiMBA is superseded by [Simplifier](https://github.com/mazeworks-security/Simplifier), which implements a faster (by one to two orders of magnitude) and more effective version of the MSiMBA algorithm. 
+
+This repo is in maintenance-only mode, only receiving occasional fixes. 
+
 # Using MSiMBA
 MSiMBA provides a single executable, `MSiMBA.exe` for simplifying MBA expressions. To simplify a single expression, use:
 ```

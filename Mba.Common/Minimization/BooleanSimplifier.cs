@@ -24,19 +24,19 @@ namespace Mba.Common.Minimization
 
             // If there are four or less variables, we can pull the optimal representation from the truth table.
             // TODO: One could possibly construct a 5 variable truth table for all 5 variable NPN classes.
-            if (variables.Count <= 4)
+            if (variables.Count <= 4 && variables.Count > 1)
             {
                 return FromTruthTable(variables, resultVector);
             }
 
             // Otherwise use Espresso to compute a semi optimal version of the boolean function.
-            var xnf = SimbaMinimizer.SimplifyBoolean(variables, resultVector);
+            //var xnf = SimbaMinimizer.SimplifyBoolean(variables, resultVector);
             var dnf = EspressoMinimizer.SimplifyBoolean(resultVector, variables).ast;
 
-            var c1 = MultibitSiMBA.GetCost(xnf, false, 1);
+            //var c1 = MultibitSiMBA.GetCost(xnf, false, 1);
             var c2 = MultibitSiMBA.GetCost(dnf, false, 1);
-            if (c1 < c2)
-                return xnf;
+            //if (c1 < c2)
+            //    return xnf;
             return dnf;
         }
 
