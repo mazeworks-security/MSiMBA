@@ -17,7 +17,6 @@ namespace Mba.Common.Minimization
         public static unsafe AstNode SimplifyBoolean(IReadOnlyList<VarNode> variables, List<int> resultVector)
         {
             var resultVec = resultVector.Select(x => (ulong)x).ToArray();
-            //var variableCombinations = MultibitSiMBA.GetVariableCombinations(variables.Count);
             var variableCombinations = MultibitSiMBA.GetVariableCombinations(variables.Count);
 
             // Keep track of which variables are demanded by which combination,

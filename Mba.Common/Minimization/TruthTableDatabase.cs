@@ -1,4 +1,5 @@
 ﻿using Mba.Ast;
+using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,19 +41,14 @@ namespace Mba.Common.Minimization
         public unsafe AstNode GetTableEntry(IReadOnlyList<VarNode> vars, int index)
         {
             // Fetch the bytecode index for the entry.
-            var bytes = Tables[vars.Count - 1];
-            var offsetIdx = 4 * index;
-            var valueBytes = new byte[] { bytes[offsetIdx], bytes[offsetIdx + 1], bytes[offsetIdx + 2], bytes[offsetIdx + 3] };
-            var offsetValue = BitConverter.ToInt32(valueBytes, 0);
+            var buffer = Tables[vars.Count - 1];
+            var offset = 8 * index;
 
-            // Construct an AST from the bytecode.
-            fixed (byte* ptr = &bytes[offsetValue])
-            {
-                uint i = 0;
-                return ParseBinaryBooleanFunc(vars, ptr, ref i);
-            }
+            var start = DecodeUint(buffer, (int)offset);
+            return Deserialize(buffer, vars, (int)start);
         }
 
+        /*
         private static unsafe AstNode ParseBinaryBooleanFunc(IReadOnlyList<VarNode> vars, byte* bytes, ref uint i)
         {
             byte opcode = bytes[i];
@@ -83,6 +79,53 @@ namespace Mba.Common.Minimization
                 default:
                     throw new InvalidOperationException($"Unrecognized opcode: {opcode}");
             }
+        }
+        */
+
+        private static AstNode Deserialize(byte[] buffer, IReadOnlyList<VarNode> variables, int offset)
+        {
+            var id = buffer[offset];
+            offset += 4;
+
+            switch(id)
+            {
+                case 2:
+                    var symbolIdx = buffer[offset];
+                    return variables[symbolIdx];
+
+                case 8:
+                case 9:
+                case 10:
+                    var aOffset = DecodeUint(buffer, offset);
+                    offset += 4;
+                    var bOffset = DecodeUint(buffer, offset);
+
+                    var a = Deserialize(buffer, variables, (int)aOffset);
+
+                    var b = Deserialize(buffer, variables, (int)bOffset);
+
+                    var opcode = id switch
+                    {
+                        8 => AstKind.And,
+                        9 => AstKind.Or,
+                        10 => AstKind.Xor,
+                    };
+
+                    return AstNode.Binop(opcode, a, b);
+
+                case 11:
+                    var srcOffset = DecodeUint(buffer, offset);
+                    var src = Deserialize(buffer, variables, (int)srcOffset);
+                    return new NegNode(src);
+
+                default:
+                    throw new InvalidOperationException($"Cannot deserialize opcode {id}");
+            }
+        }
+
+        private static uint DecodeUint(byte[] buffer, int start)
+        {
+            return BitConverter.ToUInt32(buffer.Skip(start).Take(4).ToArray());
         }
     }
 }
