@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Mba.Ast;
+using Mba.Common.Ast;
 using Mba.Common.Parsing;
 using Mba.Utility;
 using System;
@@ -108,10 +109,10 @@ namespace Mba.Parsing
                     coeff *= 2;
                 }
 
-                return new MulNode(new ConstNode(coeff, bitSize), op1);
+                return new MulNode(new ConstNode(coeff, op1.BitSize), op1);
             }
 
-            var def = new MulNode(op1, new PowerNode(new ConstNode((ulong)2, bitSize), op2));
+            var def = new MulNode(op1, new PowerNode(new ConstNode((ulong)2, op1.BitSize), op2));
             return def;
         }
 
@@ -140,11 +141,29 @@ namespace Mba.Parsing
         // Truncate the constant down to our bitsize, then multiply it by -1 and turn it into a ConstNode.
         private ConstNode GetNegativeConstant(UInt128 value) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo(value, bitSize), bitSize);
 
+        public override AstNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
+        {
+            var op1 = Visit(context.expression());
+            var width = GetWidth(context.WIDTH_SPECIFIER());
+            return new ZextNode(op1, width);
+        }
+
+        public override AstNode VisitSextExpression([NotNull] ExprParser.SextExpressionContext context)
+        {
+            var op1 = Visit(context.expression());
+            var width = GetWidth(context.WIDTH_SPECIFIER());
+            return new ZextNode(op1, width);
+        }
+
+        private uint GetWidth(ITerminalNode widthSpecifier)
+            => uint.Parse(widthSpecifier.ToString().Substring(1));
+
         public override AstNode VisitNumberExpression([NotNull] ExprParser.NumberExpressionContext context)
         {
             var text = context.NUMBER().GetText();
             var value = (ulong)UInt128.Parse(text.Replace("0x", ""), text.Contains("0x") ? NumberStyles.HexNumber : NumberStyles.Number);
-            return new ConstNode(value, bitSize);
+            var size = context.WIDTH_SPECIFIER() != null ? GetWidth(context.WIDTH_SPECIFIER()) : bitSize;
+            return new ConstNode(value, size);
         }
 
         public override AstNode VisitWildCardNumberExpression([NotNull] ExprParser.WildCardNumberExpressionContext context)
@@ -166,7 +185,9 @@ namespace Mba.Parsing
             if (varNodes.TryGetValue(text, out VarNode varNode))
                 return varNode;
 
-            varNode = new VarNode(text, bitSize);
+            var size = context.WIDTH_SPECIFIER() != null ? GetWidth(context.WIDTH_SPECIFIER()) : bitSize;
+
+            varNode = new VarNode(text, size);
             varNodes.Add(text, varNode);
             return varNode;
         }
