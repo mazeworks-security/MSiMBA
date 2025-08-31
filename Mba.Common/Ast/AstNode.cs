@@ -30,6 +30,8 @@ namespace Mba.Ast
         Lshr = 13, // logical right shift
         Udiv = 14, // Unsigned division
         Urem = 15, // Unsigned remainder
+        Zext = 16, // Zero extension
+        Sext = 17, // Sign extension
     }
 
     public abstract class AstNode
