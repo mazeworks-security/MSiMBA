@@ -152,7 +152,14 @@ namespace Mba.Parsing
         {
             var op1 = Visit(context.expression());
             var width = GetWidth(context.WIDTH_SPECIFIER());
-            return new ZextNode(op1, width);
+            return new SextNode(op1, width);
+        }
+
+        public override AstNode VisitTruncExpression([NotNull] ExprParser.TruncExpressionContext context)
+        {
+            var op1 = Visit(context.expression());
+            var width = GetWidth(context.WIDTH_SPECIFIER());
+            return new TruncNode(op1, width);
         }
 
         private uint GetWidth(ITerminalNode widthSpecifier)

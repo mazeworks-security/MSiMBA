@@ -14,6 +14,7 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('>>') expression #LshrExpression
             | expression ('zx') WIDTH_SPECIFIER #ZextExpression
             | expression ('sx') WIDTH_SPECIFIER #SextExpression
+            | expression ('tr') WIDTH_SPECIFIER #TruncExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression
             | NUMBER (':' WIDTH_SPECIFIER)? #NumberExpression
             | ID (':' WIDTH_SPECIFIER)? #IdExpression

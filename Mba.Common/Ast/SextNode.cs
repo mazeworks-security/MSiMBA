@@ -10,7 +10,7 @@ namespace Mba.Common.Ast
     // Sign extension node
     public class SextNode : AstNode
     {
-        public SextNode(AstNode src, uint bitwidth) : base(AstKind.Sext, bitwidth)
+        public SextNode(AstNode op1, uint bitwidth) : base(AstKind.Sext, bitwidth, op1)
         {
 
         }

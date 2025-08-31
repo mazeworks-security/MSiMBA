@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mba.Ast;
+using Mba.Common.Ast;
 using Microsoft.Z3;
 
 namespace Mba.Utility
@@ -25,13 +26,13 @@ namespace Mba.Utility
             if (node is ConstNode constNode)
             {
                 var cStr = !InCilForm ? constNode.Value.ToString() : $"0x{constNode.Value.ToString("X")}UL";
-                sb.Append(cStr);
+                sb.Append($"{cStr}:i{node.BitSize}");
                 return;
             }
 
             if (node is VarNode varNode)
             {
-                sb.Append(varNode.Name);
+                sb.Append($"{varNode.Name}:i{varNode.BitSize}");
                 return;
             }
 
@@ -66,6 +67,14 @@ namespace Mba.Utility
                 return;
             }
 
+            if (node is ZextNode || node is SextNode || node is TruncNode)
+            {
+                sb.Append("(");
+                FormatAstInternal(node.Children[0], ref sb);
+                sb.Append($" {GetOperatorName(node.Kind)} i{node.BitSize})");
+                return;
+            }
+
             throw new InvalidOperationException($"Cannot print ast kind: {node.Kind}");
         }
 
@@ -84,6 +93,9 @@ namespace Mba.Utility
                 AstKind.Shl => "<<",
                 AstKind.Lshr => ">>",
                 AstKind.Ashr => ">>>",
+                AstKind.Zext => "zx",
+                AstKind.Sext => "sx",
+                AstKind.Trunc => "tr",
                 _ => throw new InvalidOperationException($"Unrecognized operator: {kind.ToString()}")
             };
         }

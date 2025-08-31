@@ -8,7 +8,7 @@ namespace Mba.Ast
 {
     public abstract class UnaryNode : AstNode
     {
-        protected override int OpCount => 2;
+        protected override int OpCount => 1;
 
         public UnaryNode(AstKind kind, AstNode op1) : base(kind, op1.BitSize, op1)
         {

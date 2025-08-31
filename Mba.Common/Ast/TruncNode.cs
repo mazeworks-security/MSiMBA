@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace Mba.Common.Ast
 {
-    public class ZextNode : AstNode
+    // Sign extension node
+    public class TruncNode : AstNode
     {
-        public ZextNode(AstNode op1, uint bitwidth) : base(AstKind.Zext, bitwidth, op1)
+        public TruncNode(AstNode op1, uint bitwidth) : base(AstKind.Trunc, bitwidth, op1)
         {
-            
+
         }
 
         protected override int OpCount => 1;

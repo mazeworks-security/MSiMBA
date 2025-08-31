@@ -32,6 +32,7 @@ namespace Mba.Ast
         Urem = 15, // Unsigned remainder
         Zext = 16, // Zero extension
         Sext = 17, // Sign extension
+        Trunc = 18, // Truncation
     }
 
     public abstract class AstNode
