@@ -37,7 +37,7 @@ namespace Mba.Utility
 
             if (node is WildCardConstantNode wcNode)
             {
-                sb.Append(wcNode.Name);
+                sb.Append($"Const({wcNode.Name})");
                 return;
             }
 

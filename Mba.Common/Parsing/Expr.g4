@@ -12,9 +12,11 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('^') expression #XorExpression
             | expression ('|') expression #OrExpression
             | expression ('>>') expression #LshrExpression
+            | expression ('zx') WIDTH_SPECIFIER #ZextExpression
+            | expression ('sx') WIDTH_SPECIFIER #SextExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression
             | NUMBER #NumberExpression
-            | ID #IdExpression
+            | ID (':' WIDTH_SPECIFIER)? #IdExpression
             ;
 
 
@@ -30,6 +32,7 @@ STRING      : ('"' ~["]* '"') | '%' STRING;
 // DECIMAL      : [0-9]+;
 // HEXADECIMAL: '0x' ([a-fA-F0-9])+;
 NUMBER: ([0-9]+) | ('0x' ([a-fA-F0-9])+);
+WIDTH_SPECIFIER: 'i' NUMBER;
 
 ID          : [a-zA-Z] ([a-zA-Z0-9_])*;
 
