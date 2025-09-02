@@ -77,7 +77,7 @@ namespace Mba.Parsing
                 "<<" => Shl(op1, op2),
                 //"<<" => new ShlNode(op1, op2),
                 "+" => new AddNode(op1, op2),
-                "-" => new AddNode(op1, new MulNode(op2, new ConstNode(-1, bitSize))),
+                "-" => new AddNode(op1, new MulNode(op2, new ConstNode(-1, op1.BitSize))),
                 "&" => new AndNode(op1, op2),
                 "|" => new OrNode(op1, op2),
                 "^" => new XorNode(op1, op2),
@@ -131,7 +131,7 @@ namespace Mba.Parsing
                 "~" => new NegNode(op1),
                 // Write "-x" as "x * -1".
                 // Note that if "x" is a constant(which happens because our parser interprets negative constants as subtraction), we propagate the entire expression to a negative constant/
-                "-" => op1 is ConstNode constNode ? GetNegativeConstant((UInt128)constNode.Value) : new MulNode(op1, new ConstNode(-1, bitSize)),
+                "-" => op1 is ConstNode constNode ? GetNegativeConstant((UInt128)constNode.Value, op1.BitSize) : new MulNode(op1, new ConstNode(-1, op1.BitSize)),
                 _ => throw new InvalidOperationException($"Unrecognized unary operator: {unaryOperator}")
             };
 
@@ -139,7 +139,7 @@ namespace Mba.Parsing
         }
 
         // Truncate the constant down to our bitsize, then multiply it by -1 and turn it into a ConstNode.
-        private ConstNode GetNegativeConstant(UInt128 value) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo(value, bitSize), bitSize);
+        private ConstNode GetNegativeConstant(UInt128 value, uint size) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo(value, size), size);
 
         public override AstNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
