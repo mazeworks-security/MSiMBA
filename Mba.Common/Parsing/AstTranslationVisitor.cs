@@ -139,7 +139,7 @@ namespace Mba.Parsing
         }
 
         // Truncate the constant down to our bitsize, then multiply it by -1 and turn it into a ConstNode.
-        private ConstNode GetNegativeConstant(UInt128 value, uint size) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo(value, size), size);
+        private ConstNode GetNegativeConstant(UInt128 value, uint size) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo((ulong)value, size), size);
 
         public override AstNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
