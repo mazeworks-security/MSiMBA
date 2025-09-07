@@ -31,7 +31,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\Groebner;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\LLVM\include;C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\Groebner;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -53,12 +53,170 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Ws2_32.lib;ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="LLVM\lib\Support\AArch64AttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\AArch64BuildAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ABIBreak.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Allocator.cpp" />
+    <ClCompile Include="LLVM\lib\Support\AMDGPUMetadata.cpp" />
+    <ClCompile Include="LLVM\lib\Support\APFixedPoint.cpp" />
+    <ClCompile Include="LLVM\lib\Support\APFloat.cpp" />
+    <ClCompile Include="LLVM\lib\Support\APInt.cpp" />
+    <ClCompile Include="LLVM\lib\Support\APSInt.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ARMAttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ARMBuildAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ARMWinEH.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Atomic.cpp" />
+    <ClCompile Include="LLVM\lib\Support\AutoConvert.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BalancedPartitioning.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Base64.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BinaryStreamError.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BinaryStreamReader.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BinaryStreamRef.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BinaryStreamWriter.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BlockFrequency.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BranchProbability.cpp" />
+    <ClCompile Include="LLVM\lib\Support\BuryPointer.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CachePruning.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Caching.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Chrono.cpp" />
+    <ClCompile Include="LLVM\lib\Support\circular_raw_ostream.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CodeGenCoverage.cpp" />
+    <ClCompile Include="LLVM\lib\Support\COM.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CommandLine.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Compression.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ConvertEBCDIC.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ConvertUTF.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ConvertUTFWrapper.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CrashRecoveryContext.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CRC.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CSKYAttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\CSKYAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DAGDeltaAlgorithm.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DataExtractor.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Debug.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DebugCounter.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DeltaAlgorithm.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DeltaTree.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DivisionByConstantInfo.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DJB.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DXILABI.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DynamicAPInt.cpp" />
+    <ClCompile Include="LLVM\lib\Support\DynamicLibrary.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ELFAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ELFAttrParserCompact.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ELFAttrParserExtended.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Errno.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Error.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ErrorHandling.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ExponentialBackoff.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ExtensibleRTTI.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FileCollector.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FileOutputBuffer.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FileUtilities.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FloatingPointMode.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FoldingSet.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FormattedStream.cpp" />
+    <ClCompile Include="LLVM\lib\Support\FormatVariadic.cpp" />
+    <ClCompile Include="LLVM\lib\Support\GlobPattern.cpp" />
+    <ClCompile Include="LLVM\lib\Support\GraphWriter.cpp" />
+    <ClCompile Include="LLVM\lib\Support\HexagonAttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\HexagonAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\InitLLVM.cpp" />
+    <ClCompile Include="LLVM\lib\Support\InstructionCost.cpp" />
+    <ClCompile Include="LLVM\lib\Support\IntEqClasses.cpp" />
+    <ClCompile Include="LLVM\lib\Support\IntervalMap.cpp" />
+    <ClCompile Include="LLVM\lib\Support\JSON.cpp" />
+    <ClCompile Include="LLVM\lib\Support\KnownBits.cpp" />
+    <ClCompile Include="LLVM\lib\Support\KnownFPClass.cpp" />
+    <ClCompile Include="LLVM\lib\Support\LEB128.cpp" />
+    <ClCompile Include="LLVM\lib\Support\LineIterator.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Locale.cpp" />
+    <ClCompile Include="LLVM\lib\Support\LockFileManager.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ManagedStatic.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MathExtras.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MD5.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MemAlloc.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Memory.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MemoryBuffer.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MemoryBufferRef.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ModRef.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MSP430AttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\MSP430Attributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Mustache.cpp" />
+    <ClCompile Include="LLVM\lib\Support\NativeFormatting.cpp" />
+    <ClCompile Include="LLVM\lib\Support\OptimizedStructLayout.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Optional.cpp" />
+    <ClCompile Include="LLVM\lib\Support\OptionStrCmp.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Parallel.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Path.cpp" />
+    <ClCompile Include="LLVM\lib\Support\PGOOptions.cpp" />
+    <ClCompile Include="LLVM\lib\Support\PluginLoader.cpp" />
+    <ClCompile Include="LLVM\lib\Support\PrettyStackTrace.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Process.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Program.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ProgramStack.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RandomNumberGenerator.cpp" />
+    <ClCompile Include="LLVM\lib\Support\raw_ostream.cpp" />
+    <ClCompile Include="LLVM\lib\Support\raw_ostream_proxy.cpp" />
+    <ClCompile Include="LLVM\lib\Support\raw_os_ostream.cpp" />
+    <ClCompile Include="LLVM\lib\Support\raw_socket_stream.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Regex.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RewriteBuffer.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RewriteRope.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RISCVAttributeParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RISCVAttributes.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RISCVISAUtils.cpp" />
+    <ClCompile Include="LLVM\lib\Support\RWMutex.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ScaledNumber.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ScopedPrinter.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SHA1.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SHA256.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Signals.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Signposts.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SlowDynamicAPInt.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SmallPtrSet.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SmallVector.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SourceMgr.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SpecialCaseList.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Statistic.cpp" />
+    <ClCompile Include="LLVM\lib\Support\StringExtras.cpp" />
+    <ClCompile Include="LLVM\lib\Support\StringMap.cpp" />
+    <ClCompile Include="LLVM\lib\Support\StringRef.cpp" />
+    <ClCompile Include="LLVM\lib\Support\StringSaver.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SuffixTree.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SuffixTreeNode.cpp" />
+    <ClCompile Include="LLVM\lib\Support\SystemUtils.cpp" />
+    <ClCompile Include="LLVM\lib\Support\TarWriter.cpp" />
+    <ClCompile Include="LLVM\lib\Support\TextEncoding.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Threading.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ThreadPool.cpp" />
+    <ClCompile Include="LLVM\lib\Support\TimeProfiler.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Timer.cpp" />
+    <ClCompile Include="LLVM\lib\Support\ToolOutputFile.cpp" />
+    <ClCompile Include="LLVM\lib\Support\TrieRawHashMap.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Twine.cpp" />
+    <ClCompile Include="LLVM\lib\Support\TypeSize.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Unicode.cpp" />
+    <ClCompile Include="LLVM\lib\Support\UnicodeCaseFold.cpp" />
+    <ClCompile Include="LLVM\lib\Support\UnicodeNameToCodepoint.cpp" />
+    <ClCompile Include="LLVM\lib\Support\UnicodeNameToCodepointGenerated.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Valgrind.cpp" />
+    <ClCompile Include="LLVM\lib\Support\VersionTuple.cpp" />
+    <ClCompile Include="LLVM\lib\Support\VirtualFileSystem.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Watchdog.cpp" />
+    <ClCompile Include="LLVM\lib\Support\WithColor.cpp" />
+    <ClCompile Include="LLVM\lib\Support\xxhash.cpp" />
+    <ClCompile Include="LLVM\lib\Support\YAMLParser.cpp" />
+    <ClCompile Include="LLVM\lib\Support\YAMLTraits.cpp" />
+    <ClCompile Include="LLVM\lib\Support\Z3Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.hpp" />
     <ClInclude Include="Groebner\gb.h" />
     <ClInclude Include="Groebner\monom.h" />
     <ClInclude Include="Groebner\order.h" />
@@ -66,6 +224,7 @@
     <ClInclude Include="Groebner\polyfuncs.h" />
     <ClInclude Include="Groebner\zdd.h" />
     <ClInclude Include="Groebner\zddcache.h" />
+    <ClInclude Include="KnownBits.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
