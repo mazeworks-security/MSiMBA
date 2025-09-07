@@ -12,9 +12,10 @@
 #include "zdd.h"
 #include "gb.h"
 
-using namespace symbsat;
+#include "Common.hpp"
+#include "KnownBits.hpp"
 
-#define FFI_EXPORT extern "C" __declspec(dllexport)
+using namespace symbsat;
 
 typedef uint64_t u64_4 __attribute__((ext_vector_type(4)));
 static uint64_t ReduceOr(u64_4 a) {
