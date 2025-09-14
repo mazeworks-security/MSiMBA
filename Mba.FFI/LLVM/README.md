@@ -1,0 +1,1 @@
+Note that building this project does not require building the entirety of LLVM. We are only using some parts (KnownBits, ApInt, DemandedBits).

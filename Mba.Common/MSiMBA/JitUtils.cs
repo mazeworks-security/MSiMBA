@@ -1,6 +1,7 @@
 ﻿using Iced.Intel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -142,6 +143,9 @@ namespace Mba.Common.MSiMBA
             return ptr;
         }
 
+        public static unsafe void FreeExecutablePage(nint lpAddress)
+            => VirtualFree(lpAddress, 0, MEM_RELEASE);
+
         public static unsafe void WriteBytes(nint ptr, byte[] bytes)
         {
             var baseAddr = (ulong)ptr;
@@ -167,5 +171,13 @@ namespace Mba.Common.MSiMBA
         nuint dwSize,
         PAGE_PROTECTION_FLAGS flNewProtect,
         PAGE_PROTECTION_FLAGS* lpflOldProtect);
+
+        // Constants for dwFreeType
+        private const uint MEM_RELEASE = 0x8000;
+        private const uint MEM_DECOMMIT = 0x4000;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool VirtualFree(nint lpAddress, nuint dwSize, uint dwFreeType);
     }
+
 }
