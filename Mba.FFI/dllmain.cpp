@@ -14,6 +14,7 @@
 
 #include "Common.hpp"
 #include "KnownBits.hpp"
+#include "Optimal5.hpp"
 
 using namespace symbsat;
 

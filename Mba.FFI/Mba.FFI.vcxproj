@@ -225,6 +225,11 @@
     <ClInclude Include="Groebner\zdd.h" />
     <ClInclude Include="Groebner\zddcache.h" />
     <ClInclude Include="KnownBits.hpp" />
+    <ClInclude Include="Optimal5.hpp" />
+    <ClInclude Include="optimal5\flat_hash_map.hpp" />
+    <ClInclude Include="optimal5\optimal5.h" />
+    <ClInclude Include="optimal5\paths.h" />
+    <ClInclude Include="optimal5\paths2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
