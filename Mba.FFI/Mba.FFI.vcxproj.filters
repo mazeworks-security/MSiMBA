@@ -11,6 +11,9 @@
     <Filter Include="LLVM">
       <UniqueIdentifier>{c902df82-46fd-4569-85c1-144e0deb97b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="optimal5">
+      <UniqueIdentifier>{197d1bc3-44ed-4823-b6a5-875bde244563}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -507,5 +510,18 @@
     </ClInclude>
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="KnownBits.hpp" />
+    <ClInclude Include="optimal5\flat_hash_map.hpp">
+      <Filter>optimal5</Filter>
+    </ClInclude>
+    <ClInclude Include="optimal5\optimal5.h">
+      <Filter>optimal5</Filter>
+    </ClInclude>
+    <ClInclude Include="optimal5\paths.h">
+      <Filter>optimal5</Filter>
+    </ClInclude>
+    <ClInclude Include="optimal5\paths2.h">
+      <Filter>optimal5</Filter>
+    </ClInclude>
+    <ClInclude Include="Optimal5.hpp" />
   </ItemGroup>
 </Project>
