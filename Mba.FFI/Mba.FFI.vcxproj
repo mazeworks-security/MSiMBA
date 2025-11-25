@@ -31,7 +31,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\LLVM\include;C:\Users\colton\source\repos\Simplifier\MSiMBA\Mba.FFI\Groebner;$(IncludePath)</IncludePath>
+    <IncludePath>$(solutiondir)MSiMBA\Mba.FFI\LLVM\include;$(solutiondir)MSiMBA\Mba.FFI\Groebner;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
