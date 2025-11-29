@@ -12,7 +12,6 @@ namespace Mba.Utility
         public static ulong GetMask(uint bitCount)
         {
             return ulong.MaxValue >> ((ushort)64 - (ushort)bitCount);
-            //return maskTable[bitCount];
         }
 
         public static ulong ReduceToModulo(ulong value, uint bitCount)

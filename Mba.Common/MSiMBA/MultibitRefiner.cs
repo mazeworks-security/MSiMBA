@@ -237,17 +237,23 @@ namespace Mba.Common.MSiMBA
         // Try to express say 3 elements as the sum of two other elements.
         public void TryEliminateUniqueMultibitValues(Dictionary<ApInt, ApInt> coeffToMask)
         {
+            if (coeffToMask.Count > 16)
+                return;
+
             (ApInt coeff, ApInt mask)[] uniqueValues = coeffToMask.Select(x => (x.Key, x.Value)).ToArray();
             var l = uniqueValues.Length;
             if (l == 0)
                 return;
 
             // Try to get rid of a value by representing it as a sum of the others.
-            foreach (var i in RangeUtil.Get(l - 1))
+            //foreach (var i in RangeUtil.Get(l - 1))
+            for(int i = 0; i < l; i++)
             {
-                foreach (var j in RangeUtil.Get(i + 1, l))
+                //foreach (var j in RangeUtil.Get(i + 1, l))
+                for(int j = i + 1; j < l; j++)
                 {
-                    foreach (var k in RangeUtil.Get(l))
+                    //foreach (var k in RangeUtil.Get(l))
+                    for(int k = 0; k < l; k++)
                     {
                         if (k == i || k == j)
                             continue;
@@ -596,7 +602,18 @@ namespace Mba.Common.MSiMBA
 
         public bool CanChangeCoefficientTo(ulong oldCoeff, ulong newCoeff, ulong andMask)
         {
-            return UnmanagedAnalyses.CanChangeCoeff(oldCoeff, newCoeff, andMask, moduloMask);
+            var op1 = MinimizeCoeff(oldCoeff, andMask);
+            var op2 = MinimizeCoeff(newCoeff, andMask);
+            return op1 == op2;
+
+            /*
+            bool implTwo = UnmanagedAnalyses.CanChangeCoeff(oldCoeff, newCoeff, andMask, moduloMask);
+
+            if (implOne != implTwo)
+                throw new InvalidOperationException("mismatch");
+            return implTwo;
+            */
+            //return UnmanagedAnalyses.CanChangeCoeff(oldCoeff, newCoeff, andMask, moduloMask);
         }
 
         public bool CanRemoveMask(ApInt coeff, ApInt andMask)
