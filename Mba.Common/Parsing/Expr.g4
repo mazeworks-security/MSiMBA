@@ -15,6 +15,8 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('zx') WIDTH_SPECIFIER #ZextExpression
             | expression ('sx') WIDTH_SPECIFIER #SextExpression
             | expression ('tr') WIDTH_SPECIFIER #TruncExpression
+            | expression ICMP_OPERATOR expression #ICmpExpression
+            | expression ('?') expression (':') expression #SelectExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression
             | NUMBER (':' WIDTH_SPECIFIER)? #NumberExpression
             | ID (':' WIDTH_SPECIFIER)? #IdExpression
@@ -27,6 +29,8 @@ LPARAM      : '(';
 RPARAM      : ')';
 COMMA       : ',';
 
+
+ICMP_OPERATOR: '==' | '!=' | '>' | '>=' | '<' | '<=' | '>s' | '>=s' | '<' | '<=s';
 
 STRING      : ('"' ~["]* '"') | '%' STRING;
 
