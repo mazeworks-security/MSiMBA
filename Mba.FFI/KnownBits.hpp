@@ -178,8 +178,100 @@ FFI_EXPORT void GetZextKnownBits(FfiKnownBits& lhs, uint32_t width, FfiKnownBits
 	*out = FfiKnownBits(kb.zext(width));
 }
 
-FFI_EXPORT void GetTruncKnownBits(FfiKnownBits lhs, uint32_t width, FfiKnownBits* out)
+FFI_EXPORT void GetTruncKnownBits(FfiKnownBits& lhs, uint32_t width, FfiKnownBits* out)
 {
 	KnownBits kb = lhs;
 	*out = FfiKnownBits(kb.trunc(width));
+}
+
+enum CmpPredicate : unsigned char
+{
+	Eq = 0,
+	Ne = 1,
+	Ugt = 2,
+	Uge = 3,
+	Ult = 4,
+	Ule = 5,
+	Sgt = 6,
+	Sge = 7,
+	Slt = 8,
+	Sle = 9,
+};
+
+
+FfiKnownBits Icmp(CmpPredicate pred, const llvm::KnownBits& lhs, const llvm::KnownBits& rhs)
+{
+	std::optional<bool> result = std::nullopt;
+	switch (pred)
+	{
+	case CmpPredicate::Eq:
+		result = llvm::KnownBits::eq(lhs, rhs);
+		break;
+	case CmpPredicate::Ne:
+		result = llvm::KnownBits::ne(lhs, rhs);
+		break;
+	case CmpPredicate::Ugt:
+		result = llvm::KnownBits::ugt(lhs, rhs);
+		break;
+	case CmpPredicate::Uge:
+		result = llvm::KnownBits::uge(lhs, rhs);
+		break;
+	case CmpPredicate::Ult:
+		result = llvm::KnownBits::ult(lhs, rhs);
+		break;
+	case CmpPredicate::Ule:
+		result = llvm::KnownBits::ule(lhs, rhs);
+		break;
+	case CmpPredicate::Sgt:
+		result = llvm::KnownBits::sgt(lhs, rhs);
+		break;
+	case CmpPredicate::Sge:
+		result = llvm::KnownBits::sge(lhs, rhs);
+		break;
+	case CmpPredicate::Slt:
+		result = llvm::KnownBits::slt(lhs, rhs);
+		break;
+	case CmpPredicate::Sle:
+		result = llvm::KnownBits::sle(lhs, rhs);
+		break;
+	}
+
+	FfiKnownBits kb;
+	kb.width = 1;
+	kb.one = 0;
+	kb.zero = 0;
+
+	if (!result.has_value())
+	{
+		return kb;
+	}
+
+	kb.one |= (uint64_t)result.value();
+	kb.zero |= (uint64_t)!result.value();
+	return kb;
+}
+
+FFI_EXPORT void GetIcmpKnownBits(CmpPredicate pred, FfiKnownBits& lhs, FfiKnownBits& rhs, FfiKnownBits* out)
+{
+	*out = Icmp(pred, lhs, rhs);
+}
+
+FFI_EXPORT void GetSelectKnownBits(FfiKnownBits& a, FfiKnownBits& b, FfiKnownBits& c, FfiKnownBits* out)
+{
+	llvm::KnownBits kb0 = a;
+	llvm::KnownBits kb1 = b;
+	llvm::KnownBits kb2 = c;
+	if (kb0.One.getBoolValue())
+	{
+		*out = FfiKnownBits(kb1);
+		return;
+	}
+
+	if (kb0.Zero.getBoolValue())
+	{
+		*out = FfiKnownBits(kb2);
+		return;
+	}
+
+	*out = FfiKnownBits(kb1.intersectWith(kb2));
 }
