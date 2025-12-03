@@ -33,6 +33,8 @@ namespace Mba.Ast
         Zext = 16, // Zero extension
         Sext = 17, // Sign extension
         Trunc = 18, // Truncation
+        ICmp = 19, // Integer comparison
+        Select = 20, // Conditional select
     }
 
     public abstract class AstNode
@@ -49,7 +51,7 @@ namespace Mba.Ast
 
         public int index;
 
-        public string Operator => AstFormatter.GetOperatorName(Kind);
+        public string Operator => AstFormatter.GetOperatorName(this);
 
         public uint BitSize { get; }
 

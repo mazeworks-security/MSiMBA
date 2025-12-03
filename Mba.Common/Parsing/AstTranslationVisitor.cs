@@ -162,6 +162,38 @@ namespace Mba.Parsing
             return new TruncNode(op1, width);
         }
 
+        public override AstNode VisitICmpExpression([NotNull] ExprParser.ICmpExpressionContext context)
+        {
+            var op1 = Visit(context.expression(0));
+            var op2 = Visit(context.expression(1));
+            var cmpOperator = context.ICMP_OPERATOR().GetText();
+            var predicate = cmpOperator switch
+            {
+                "==" => Predicate.Eq,
+                "!=" => Predicate.Ne,
+                ">" => Predicate.Ugt,
+                ">=" => Predicate.Uge,
+                "<" => Predicate.Ult,
+                "<=" => Predicate.Ule,
+                ">s" => Predicate.Sgt,
+                ">=s" => Predicate.Sge,
+                "<s" => Predicate.Slt,
+                "<=s" => Predicate.Sle,
+                _ => throw new InvalidOperationException($"Unrecognized icmp operator {cmpOperator}"),
+            };
+
+
+            return new ICmpNode(predicate, op1, op2);
+        }
+
+        public override AstNode VisitSelectExpression([NotNull] ExprParser.SelectExpressionContext context)
+        {
+            var op1 = Visit(context.expression(0));
+            var op2 = Visit(context.expression(1));
+            var op3 = Visit(context.expression(2));
+            return new SelectNode(op1, op2, op3);
+        }
+
         private uint GetWidth(ITerminalNode widthSpecifier)
             => uint.Parse(widthSpecifier.ToString().Substring(1));
 

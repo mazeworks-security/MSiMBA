@@ -51,7 +51,7 @@ namespace Mba.Utility
                     
                     FormatAstInternal(node.Children[i], ref sb);
                     if (i != node.Children.Count - 1)
-                        sb.Append(GetOperatorName(node.Kind));
+                        sb.Append(GetOperatorName(node));
                 }
 
                 sb.Append(")");
@@ -61,7 +61,7 @@ namespace Mba.Utility
             if (node is UnaryNode)
             {
                 sb.Append("(");
-                sb.Append($"{GetOperatorName(node.Kind)}");
+                sb.Append($"{GetOperatorName(node)}");
                 FormatAstInternal(node.Children[0], ref sb);
                 sb.Append(")");
                 return;
@@ -71,16 +71,28 @@ namespace Mba.Utility
             {
                 sb.Append("(");
                 FormatAstInternal(node.Children[0], ref sb);
-                sb.Append($" {GetOperatorName(node.Kind)} i{node.BitSize})");
+                sb.Append($" {GetOperatorName(node)} i{node.BitSize})");
                 return;
+            }
+
+            if (node is SelectNode)
+            {
+                sb.Append("(");
+                FormatAstInternal(node.Children[0], ref sb);
+                sb.Append(" ? ");
+                FormatAstInternal(node.Children[1], ref sb);
+                sb.Append(" : ");
+                FormatAstInternal(node.Children[2], ref sb);
+                sb.Append(")");
             }
 
             throw new InvalidOperationException($"Cannot print ast kind: {node.Kind}");
         }
 
-        public static string GetOperatorName(AstKind kind)
+        public static string GetOperatorName(AstNode node)
         {
-            return kind switch
+
+            return node.Kind switch
             {
                 AstKind.Const => "",
                 AstKind.Power => "**",
@@ -96,7 +108,26 @@ namespace Mba.Utility
                 AstKind.Zext => "zx",
                 AstKind.Sext => "sx",
                 AstKind.Trunc => "tr",
-                _ => throw new InvalidOperationException($"Unrecognized operator: {kind.ToString()}")
+                AstKind.ICmp => GetPredicateName((node as ICmpNode).Pred),
+                _ => throw new InvalidOperationException($"Unrecognized operator: {node.Kind.ToString()}")
+            };
+        }
+
+        private static string GetPredicateName(Predicate pred)
+        {
+            return pred switch
+            {
+                Predicate.Eq => "==",
+                Predicate.Ne => "!=",
+                Predicate.Ugt => ">",
+                Predicate.Uge => ">=",
+                Predicate.Ult => "<",
+                Predicate.Ule => "<=",
+                Predicate.Sgt => ">s",
+                Predicate.Sge => ">=s",
+                Predicate.Slt => "<s",
+                Predicate.Sle => "<=s",
+                _ => throw new InvalidOperationException($"Unrecognized predicate: {pred}")
             };
         }
     }
