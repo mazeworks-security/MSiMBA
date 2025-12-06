@@ -35,6 +35,8 @@ namespace Mba.Ast
         Trunc = 18, // Truncation
         ICmp = 19, // Integer comparison
         Select = 20, // Conditional select
+
+        IntrinsicCall = 21, // Intrinsic calls used by our DSL
     }
 
     public abstract class AstNode

@@ -14,9 +14,9 @@ namespace Mba.Parsing
     public static class AstParser
     {
         public static AstNode Parse(string exprText, uint bitSize)
-            => Parse(exprText, bitSize, new(), new(), new());
+            => ParseDsl(exprText, bitSize, new(), new(), new());
 
-        public static AstNode Parse(string exprText, uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
+        public static AbstractDslNode ParseDsl(string exprText, uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
         {
             // Parse the expression AST.
             var charStream = new AntlrInputStream(exprText);
@@ -25,6 +25,7 @@ namespace Mba.Parsing
             var parser = new ExprParser(tokenStream);
             parser.BuildParseTree = true;
             var expr = parser.gamba();
+
 
             // Throw if ANTLR has any errors.
             var errCount = parser.NumberOfSyntaxErrors;

@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 
 namespace Mba.Common.Parsing
 {
-    public enum DslType
+    public enum DslTypeKind
     {
-        Bool,
-        U8,
-        U64,
+        Integer,
         Node,
     }
 
-    public class Dsl(IReadOnlyList<DslFunctionGroup> functionGroups, IReadOnlyList<DslRuleGroup> ruleGroups)
+
+    public class Dsl(IReadOnlyList<DslFunctionGroup> functionGroups, IReadOnlyList<DslRuleGroup> ruleGroups) : AbstractDslNode
     {
         public IReadOnlyList<DslFunctionGroup> FunctionGroups { get; } = functionGroups;
         public IReadOnlyList<DslRuleGroup> RuleGroups { get; } = ruleGroups;
@@ -27,7 +26,7 @@ namespace Mba.Common.Parsing
         public IReadOnlyList<DslFunction> Functions { get; } = functions;
     }
 
-    public class DslFunction(bool isBuiltin, string name, IReadOnlyList<DslFunctionArgument> arguments, DslType returnType, AstNode body)
+    public class DslFunction(bool isBuiltin, string name, IReadOnlyList<DslFunctionArgument> arguments, DslType returnType, AstNode body) : AbstractDslNode
     {
         public bool IsBuiltin { get; } = isBuiltin;
         public string Name { get; } = name;
@@ -40,6 +39,12 @@ namespace Mba.Common.Parsing
     {
         public string Name { get; } = name;
         public DslType Type { get; } = type;
+    }
+
+    public class DslType(DslTypeKind kind, uint Width) : AbstractDslNode
+    {
+        public DslTypeKind Kind { get; } = kind;
+        public uint Width { get; } = Width;
     }
 
     public class DslRuleGroup(string name, IReadOnlyList<DslRule> rules) : AbstractDslNode
@@ -68,7 +73,7 @@ namespace Mba.Common.Parsing
 
     public abstract class AbstractDslNode
     {
-        public unsafe static implicit operator AstNode(AbstractDslNode ctx) => ((DslAstParsingWrapper)ctx).astNode;
+        public unsafe static implicit operator AstNode(AbstractDslNode ctx) => ctx == null ? null : ((DslAstParsingWrapper)ctx).astNode;
 
         public unsafe static implicit operator AbstractDslNode(AstNode ctx) => new DslAstParsingWrapper(ctx);
     }

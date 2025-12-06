@@ -2,22 +2,22 @@ grammar Expr;
 
 gamba: (expression EOF) | (dsl EOF);
 
-dsl: function_group* rule_group+ EOF;
+dsl: functionGroup* ruleGroup+ EOF;
 
 
-function_group: FUNCTIONS ID ('[') function+ (']');
+functionGroup: FUNCTIONS ID ('[') function+ (']');
 
 function:
-    BUILTIN ('fn') ID LPARAM function_argument ((',') function_argument)* RPARAM ('->') type (';') #BuiltinFunction
-    | ('fn') ID LPARAM function_argument ((',') function_argument)* RPARAM '->' type ('{') RETURN expression (';') ('}') #ImplementedFunction;
+    BUILTIN ('fn') ID LPARAM functionArgument ((',') functionArgument)* RPARAM ('->') type (';') #BuiltinFunction
+    | ('fn') ID LPARAM functionArgument ((',') functionArgument)* RPARAM '->' type ('{') RETURN expression (';') ('}') #ImplementedFunction;
 
-function_argument: ID (':') type;
+functionArgument: ID (':') type;
 
 type: ID;
 
-rule_group: RULES ID ('[') rewrite_rule+ (']');
+ruleGroup: RULES ID ('[') rewriteRule+ (']');
 
-rewrite_rule: ID (':') expression ('=>') expression ('::' expression)?;
+rewriteRule: ID (':') expression ('=>') expression ('::' expression)?;
 
 
 expression:   LPARAM expression RPARAM                              #ParenthesizedExpression
@@ -30,15 +30,15 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('^') expression #XorExpression
             | expression ('|') expression #OrExpression
             | expression ('>>') expression #LshrExpression
-            | expression ('zx') WIDTH_SPECIFIER #ZextExpression
-            | expression ('sx') WIDTH_SPECIFIER #SextExpression
-            | expression ('tr') WIDTH_SPECIFIER #TruncExpression
+            | expression ('zx') type #ZextExpression
+            | expression ('sx') type #SextExpression
+            | expression ('tr') type #TruncExpression
             | expression ICMP_OPERATOR expression #ICmpExpression
             | expression ('?') expression (':') expression #SelectExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression
             | ID LPARAM expression ((',') expression)* RPARAM #IntrinsicCallExpression
-            | NUMBER (':' WIDTH_SPECIFIER)? #NumberExpression
-            | ID (':' WIDTH_SPECIFIER)? #IdExpression
+            | NUMBER (':' type)? #NumberExpression
+            | ID (':' type)? #IdExpression
             ;
 
 
@@ -59,7 +59,6 @@ STRING      : ('"' ~["]* '"') | '%' STRING;
 // DECIMAL      : [0-9]+;
 // HEXADECIMAL: '0x' ([a-fA-F0-9])+;
 NUMBER: ([0-9]+) | ('0x' ([a-fA-F0-9])+);
-WIDTH_SPECIFIER: 'i' NUMBER;
 
 ID          : [a-zA-Z_] ([a-zA-Z0-9_])*;
 

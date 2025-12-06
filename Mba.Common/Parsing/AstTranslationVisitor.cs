@@ -45,7 +45,77 @@ namespace Mba.Parsing
 
         public override AbstractDslNode VisitGamba([NotNull] ExprParser.GambaContext context)
         {
+            var dsl = context.dsl();
+            if (dsl != null)
+                return VisitDsl(dsl);
             return Visit(context.expression());
+        }
+
+        public override AbstractDslNode VisitDsl([NotNull] ExprParser.DslContext context)
+        {
+            var fGroup = context.functionGroup().Select(x => (DslFunctionGroup)Visit(x)).ToList();
+            var ruleGroup = context.ruleGroup().Select(x => (DslRuleGroup)Visit(x)).ToList();
+            return new Dsl(fGroup, ruleGroup);
+        }
+
+        public override AbstractDslNode VisitFunctionGroup([NotNull] ExprParser.FunctionGroupContext context)
+        {
+            var name = context.ID().GetText();
+            var functions = context.function().Select(x => (DslFunction)Visit(x)).ToList();
+            return new DslFunctionGroup(name, functions);
+        }
+
+        public override AbstractDslNode VisitBuiltinFunction([NotNull] ExprParser.BuiltinFunctionContext context)
+        {
+            var name = context.ID().GetText();
+            var args = context.functionArgument().Select(x => (DslFunctionArgument)Visit(x)).ToList();
+            var typeName = context.type().GetText();
+            var type = ParseType(typeName);
+            return new DslFunction(true, name, args, type, null);
+        }
+
+        public override AbstractDslNode VisitImplementedFunction([NotNull] ExprParser.ImplementedFunctionContext context)
+        {
+            var name = context.ID().GetText();
+            var args = context.functionArgument().Select(x => (DslFunctionArgument)Visit(x)).ToList();
+            var typeName = context.type().GetText();
+            var type = ParseType(typeName);
+            var body = Visit(context.expression());
+            return new DslFunction(false, name, args, type, body);
+        }
+
+        public override AbstractDslNode VisitFunctionArgument([NotNull] ExprParser.FunctionArgumentContext context)
+        {
+            var name = context.ID().GetText();
+            var typeName = context.type().GetText();
+            var type = ParseType(typeName);
+            return new DslFunctionArgument(name, type);
+        }
+
+        private DslType ParseType(string name)
+        {
+            if (name == "Node")
+                return new DslType(DslTypeKind.Node, 0);
+
+            if (!name.StartsWith("i"))
+                throw new InvalidOperationException();
+            return new DslType(DslTypeKind.Integer, uint.Parse(name.Substring(1)));
+        }
+
+        public override AbstractDslNode VisitRuleGroup([NotNull] ExprParser.RuleGroupContext context)
+        {
+            var name = context.ID().GetText();
+            var rules = context.rewriteRule().Select(x => (DslRule)Visit(x)).ToList();
+            return new DslRuleGroup(name, rules);
+        }
+
+        public override AbstractDslNode VisitRewriteRule([NotNull] ExprParser.RewriteRuleContext context)
+        {
+            var name = context.ID().GetText();
+            var before = Visit(context.expression()[0]);
+            var after = Visit(context.expression()[1]);
+            var precondition = context.expression().Length > 2 ? Visit(context.expression()[2]) : null;
+            return new DslRule(name, before, after, precondition);
         }
 
         public override AbstractDslNode VisitExpression([NotNull] ExprParser.ExpressionContext context)
@@ -159,21 +229,21 @@ namespace Mba.Parsing
         public override AbstractDslNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.WIDTH_SPECIFIER());
+            var width = GetWidth(context.type());
             return new ZextNode(op1, width);
         }
 
         public override AbstractDslNode VisitSextExpression([NotNull] ExprParser.SextExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.WIDTH_SPECIFIER());
+            var width = GetWidth(context.type());
             return new SextNode(op1, width);
         }
 
         public override AbstractDslNode VisitTruncExpression([NotNull] ExprParser.TruncExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.WIDTH_SPECIFIER());
+            var width = GetWidth(context.type());
             return new TruncNode(op1, width);
         }
 
@@ -209,14 +279,14 @@ namespace Mba.Parsing
             return new SelectNode(op1, op2, op3);
         }
 
-        private uint GetWidth(ITerminalNode widthSpecifier)
-            => uint.Parse(widthSpecifier.ToString().Substring(1));
+        private uint GetWidth(ExprParser.TypeContext widthSpecifier)
+            => uint.Parse(widthSpecifier.ID().ToString().Substring(1));
 
         public override AbstractDslNode VisitNumberExpression([NotNull] ExprParser.NumberExpressionContext context)
         {
             var text = context.NUMBER().GetText();
             var value = (ulong)UInt128.Parse(text.Replace("0x", ""), text.Contains("0x") ? NumberStyles.HexNumber : NumberStyles.Number);
-            var size = context.WIDTH_SPECIFIER() != null ? GetWidth(context.WIDTH_SPECIFIER()) : bitSize;
+            var size = context.type() != null ? GetWidth(context.type()) : bitSize;
             var constNode = Const(value, size);
             return constNode;
         }
@@ -226,36 +296,50 @@ namespace Mba.Parsing
 
         private ConstNode Const(ulong value, uint bitSize)
         {
-            if (constNodes.TryGetValue((value, bitSize), out var existing))
-                return existing;
+            // if (constNodes.TryGetValue((value, bitSize), out var existing))
+            //    return existing;
             var node = new ConstNode(value, bitSize);
-            constNodes[(value, bitSize)] = node;
+            // constNodes[(value, bitSize)] = node;
             return node;
         }
 
         public override AbstractDslNode VisitWildCardNumberExpression([NotNull] ExprParser.WildCardNumberExpressionContext context)
         {
             var text = context.ID().GetText();
+
+            /*
             if (varNodes.TryGetValue(text, out VarNode varNode))
                 throw new InvalidOperationException($"Variable name cannot be shared across wild card constant and variable nodes!");
             if (wildCardConstantNodes.TryGetValue(text, out var wcNode))
                 return wcNode;
+            */
 
-            wcNode = new WildCardConstantNode(text, bitSize);
-            wildCardConstantNodes.Add(text, wcNode);
+            var wcNode = new WildCardConstantNode(text, bitSize);
+            //wildCardConstantNodes.Add(text, wcNode);
+   
+
             return wcNode;
+        }
+
+        public override AbstractDslNode VisitIntrinsicCallExpression([NotNull] ExprParser.IntrinsicCallExpressionContext context)
+        {
+            var name = context.ID().GetText();
+            var t = context.GetText();
+            var expr = context.expression();
+            var args = expr.Select(x => (AstNode)Visit(x)).ToList();
+            return new IntrinsicCallNode(name, 64, args);
         }
 
         public override AbstractDslNode VisitIdExpression([NotNull] ExprParser.IdExpressionContext context)
         {
             var text = context.ID().GetText();
-            if (varNodes.TryGetValue(text, out VarNode varNode))
-                return varNode;
+            //if (varNodes.TryGetValue(text, out VarNode varNode))
+            //    return varNode;
 
-            var size = context.WIDTH_SPECIFIER() != null ? GetWidth(context.WIDTH_SPECIFIER()) : bitSize;
+            var size = context.type() != null ? GetWidth(context.type()) : bitSize;
 
-            varNode = new VarNode(text, size);
-            varNodes.Add(text, varNode);
+            var varNode = new VarNode(text, size);
+            //varNodes.Add(text, varNode);
             return varNode;
         }
     }
