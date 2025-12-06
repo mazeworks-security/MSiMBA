@@ -15,7 +15,8 @@ using System.Threading.Tasks;
 
 namespace Mba.Parsing
 {
-    public class AstTranslationVisitor : ExprBaseVisitor<AstNode>
+
+    public class AstTranslationVisitor : ExprBaseVisitor<DslNode>
     {
         private readonly uint bitSize;
 
@@ -31,7 +32,7 @@ namespace Mba.Parsing
             varNodes = new();
             constNodes = new();
             wildCardConstantNodes = new();
-            
+
         }
 
         public AstTranslationVisitor(uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
@@ -42,48 +43,48 @@ namespace Mba.Parsing
             this.wildCardConstantNodes = wildCardConstantNodes;
         }
 
-        public override AstNode VisitGamba([NotNull] ExprParser.GambaContext context)
+        public override DslNode VisitGamba([NotNull] ExprParser.GambaContext context)
         {
             return Visit(context.expression());
         }
 
-        public override AstNode VisitExpression([NotNull] ExprParser.ExpressionContext context)
+        public override DslNode VisitExpression([NotNull] ExprParser.ExpressionContext context)
         {
             var result = base.VisitExpression(context);
             return result;
         }
 
-        public override AstNode VisitPowExpression([NotNull] ExprParser.PowExpressionContext context) 
+        public override DslNode VisitPowExpression([NotNull] ExprParser.PowExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitMulExpression([NotNull] ExprParser.MulExpressionContext context)
+        public override DslNode VisitMulExpression([NotNull] ExprParser.MulExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitAddOrSubExpression([NotNull] ExprParser.AddOrSubExpressionContext context) 
+        public override DslNode VisitAddOrSubExpression([NotNull] ExprParser.AddOrSubExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitShiftExpression([NotNull] ExprParser.ShiftExpressionContext context)
+        public override DslNode VisitShiftExpression([NotNull] ExprParser.ShiftExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitAndExpression([NotNull] ExprParser.AndExpressionContext context)
+        public override DslNode VisitAndExpression([NotNull] ExprParser.AndExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitXorExpression([NotNull] ExprParser.XorExpressionContext context)
+        public override DslNode VisitXorExpression([NotNull] ExprParser.XorExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitOrExpression([NotNull] ExprParser.OrExpressionContext context)
+        public override DslNode VisitOrExpression([NotNull] ExprParser.OrExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        public override AstNode VisitLshrExpression([NotNull] ExprParser.LshrExpressionContext context)
+        public override DslNode VisitLshrExpression([NotNull] ExprParser.LshrExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
-        private AstNode Binary(ExprParser.ExpressionContext exp1, ExprParser.ExpressionContext exp2, string text)
+        private DslNode Binary(ExprParser.ExpressionContext exp1, ExprParser.ExpressionContext exp2, string text)
         {
-            var op1 = Visit(exp1);
+            var op1 = (AstNode)Visit(exp1);
             var op2 = Visit(exp2);
             var binaryOperator = text;
 
-            AstNode node = binaryOperator switch
+            DslNode node = binaryOperator switch
             {
                 "**" => new PowerNode(op1, op2),
                 "*" => Mul(op1, op2),
@@ -97,20 +98,20 @@ namespace Mba.Parsing
                 "^" => new XorNode(op1, op2),
                 ">>" => new LshrNode(op1, op2),
                 _ => throw new InvalidOperationException($"Unrecognized binary operator: {binaryOperator}")
-            } ;
+            };
 
             return node;
         }
 
-        private AstNode Mul(AstNode op1, AstNode op2)
+        private DslNode Mul(DslNode op1, DslNode op2)
         {
             var def = new MulNode(op1, op2);
             return def;
         }
 
-        private AstNode Shl(AstNode op1, AstNode op2)
+        private DslNode Shl(AstNode op1, AstNode op2)
         {
-            if(op2 is ConstNode constNode)
+            if (op2 is ConstNode constNode)
             {
                 var degree = constNode.Value;
                 // If we have shl x<<0, return x
@@ -118,29 +119,29 @@ namespace Mba.Parsing
                     return op1;
 
                 ulong coeff = 2;
-                for(int i = 1; i < degree; i++)
+                for (int i = 1; i < degree; i++)
                 {
                     coeff *= 2;
                 }
 
-                return new MulNode(Const(coeff, op1.BitSize), op1); 
+                return new MulNode(Const(coeff, op1.BitSize), op1);
             }
 
             var def = new MulNode(op1, new PowerNode(Const((ulong)2, op1.BitSize), op2));
             return def;
         }
 
-        public override AstNode VisitParenthesizedExpression([NotNull] ExprParser.ParenthesizedExpressionContext context)
+        public override DslNode VisitParenthesizedExpression([NotNull] ExprParser.ParenthesizedExpressionContext context)
         {
             return Visit(context.expression());
         }
 
-        public override AstNode VisitNegativeOrNegationExpression([NotNull] ExprParser.NegativeOrNegationExpressionContext context)
+        public override DslNode VisitNegativeOrNegationExpression([NotNull] ExprParser.NegativeOrNegationExpressionContext context)
         {
-            var op1 = Visit(context.expression());
+            var op1 = (AstNode)Visit(context.expression());
             var unaryOperator = context.children[0].GetText();
 
-            AstNode node = unaryOperator switch
+            DslNode node = unaryOperator switch
             {
                 "~" => new NegNode(op1),
                 // Write "-x" as "x * -1".
@@ -155,28 +156,28 @@ namespace Mba.Parsing
         // Truncate the constant down to our bitsize, then multiply it by -1 and turn it into a ConstNode.
         private ConstNode GetNegativeConstant(UInt128 value, uint size) => Const(0 - (ulong)ModuloReducer.ReduceToModulo((ulong)value, size), size);
 
-        public override AstNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
+        public override DslNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
             var op1 = Visit(context.expression());
             var width = GetWidth(context.WIDTH_SPECIFIER());
             return new ZextNode(op1, width);
         }
 
-        public override AstNode VisitSextExpression([NotNull] ExprParser.SextExpressionContext context)
+        public override DslNode VisitSextExpression([NotNull] ExprParser.SextExpressionContext context)
         {
             var op1 = Visit(context.expression());
             var width = GetWidth(context.WIDTH_SPECIFIER());
             return new SextNode(op1, width);
         }
 
-        public override AstNode VisitTruncExpression([NotNull] ExprParser.TruncExpressionContext context)
+        public override DslNode VisitTruncExpression([NotNull] ExprParser.TruncExpressionContext context)
         {
             var op1 = Visit(context.expression());
             var width = GetWidth(context.WIDTH_SPECIFIER());
             return new TruncNode(op1, width);
         }
 
-        public override AstNode VisitICmpExpression([NotNull] ExprParser.ICmpExpressionContext context)
+        public override DslNode VisitICmpExpression([NotNull] ExprParser.ICmpExpressionContext context)
         {
             var op1 = Visit(context.expression(0));
             var op2 = Visit(context.expression(1));
@@ -200,7 +201,7 @@ namespace Mba.Parsing
             return new ICmpNode(predicate, op1, op2);
         }
 
-        public override AstNode VisitSelectExpression([NotNull] ExprParser.SelectExpressionContext context)
+        public override DslNode VisitSelectExpression([NotNull] ExprParser.SelectExpressionContext context)
         {
             var op1 = Visit(context.expression(0));
             var op2 = Visit(context.expression(1));
@@ -211,7 +212,7 @@ namespace Mba.Parsing
         private uint GetWidth(ITerminalNode widthSpecifier)
             => uint.Parse(widthSpecifier.ToString().Substring(1));
 
-        public override AstNode VisitNumberExpression([NotNull] ExprParser.NumberExpressionContext context)
+        public override DslNode VisitNumberExpression([NotNull] ExprParser.NumberExpressionContext context)
         {
             var text = context.NUMBER().GetText();
             var value = (ulong)UInt128.Parse(text.Replace("0x", ""), text.Contains("0x") ? NumberStyles.HexNumber : NumberStyles.Number);
@@ -232,7 +233,7 @@ namespace Mba.Parsing
             return node;
         }
 
-        public override AstNode VisitWildCardNumberExpression([NotNull] ExprParser.WildCardNumberExpressionContext context)
+        public override DslNode VisitWildCardNumberExpression([NotNull] ExprParser.WildCardNumberExpressionContext context)
         {
             var text = context.ID().GetText();
             if (varNodes.TryGetValue(text, out VarNode varNode))
@@ -245,7 +246,7 @@ namespace Mba.Parsing
             return wcNode;
         }
 
-        public override AstNode VisitIdExpression([NotNull] ExprParser.IdExpressionContext context)
+        public override DslNode VisitIdExpression([NotNull] ExprParser.IdExpressionContext context)
         {
             var text = context.ID().GetText();
             if (varNodes.TryGetValue(text, out VarNode varNode))
