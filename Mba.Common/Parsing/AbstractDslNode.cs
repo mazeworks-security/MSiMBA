@@ -15,11 +15,16 @@ namespace Mba.Common.Parsing
         Node,
     }
 
-    public abstract class DslNode
+    public class Dsl(IReadOnlyList<DslFunctionGroup> functionGroups, IReadOnlyList<DslRuleGroup> ruleGroups)
     {
-        public unsafe static implicit operator AstNode(DslNode ctx) => ((DslAstParsingWrapper)ctx).astNode;
+        public IReadOnlyList<DslFunctionGroup> FunctionGroups { get; } = functionGroups;
+        public IReadOnlyList<DslRuleGroup> RuleGroups { get; } = ruleGroups;
+    }
 
-        public unsafe static implicit operator DslNode(AstNode ctx) => new DslAstParsingWrapper(ctx);
+    public class DslFunctionGroup(string name, IReadOnlyList<DslFunction> functions) : AbstractDslNode
+    {
+        public string Name { get; } = name;
+        public IReadOnlyList<DslFunction> Functions { get; } = functions;
     }
 
     public class DslFunction(bool isBuiltin, string name, IReadOnlyList<DslFunctionArgument> arguments, DslType returnType, AstNode body)
@@ -31,19 +36,19 @@ namespace Mba.Common.Parsing
         public AstNode Body { get; } = body;
     }
 
-    public class DslFunctionArgument(string name, DslType type) : DslNode
+    public class DslFunctionArgument(string name, DslType type) : AbstractDslNode
     {
         public string Name { get; } = name;
         public DslType Type { get; } = type;
     }
 
-    public class DslRuleGroup(string name, IReadOnlyList<DslRule> rules) : DslNode
+    public class DslRuleGroup(string name, IReadOnlyList<DslRule> rules) : AbstractDslNode
     {
         public string Name { get; } = name;
         public IReadOnlyList<DslRule> Rules { get; } = rules;
     }
 
-    public class DslRule(string name, AstNode before, AstNode after, AstNode precondition) : DslNode
+    public class DslRule(string name, AstNode before, AstNode after, AstNode precondition) : AbstractDslNode
     {
         public string Name { get; } = name;
         public AstNode Before { get; } = before;
@@ -51,7 +56,7 @@ namespace Mba.Common.Parsing
         public AstNode Precondition { get; } = precondition;
     }
 
-    public class DslAstParsingWrapper : DslNode
+    public class DslAstParsingWrapper : AbstractDslNode
     {
         public readonly AstNode astNode;
 
@@ -60,4 +65,12 @@ namespace Mba.Common.Parsing
             this.astNode = astNode;
         }
     }
+
+    public abstract class AbstractDslNode
+    {
+        public unsafe static implicit operator AstNode(AbstractDslNode ctx) => ((DslAstParsingWrapper)ctx).astNode;
+
+        public unsafe static implicit operator AbstractDslNode(AstNode ctx) => new DslAstParsingWrapper(ctx);
+    }
+
 }
