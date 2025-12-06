@@ -21,11 +21,13 @@ namespace Mba.Common.Ast
         Sle = 9,
     }
 
-    public class ICmpNode : BinaryNode
+    public class ICmpNode : AstNode
     {
         public Predicate Pred { get; set; }
 
-        public ICmpNode(Predicate pred, AstNode op1, AstNode op2) : base(AstKind.ICmp, op1, op2)
+        protected override int OpCount => 3;
+
+        public ICmpNode(Predicate pred, AstNode op1, AstNode op2) : base(AstKind.ICmp, 1, op1, op2)
         {
             Pred = pred;
         }

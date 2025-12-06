@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Mba.Ast
 {
@@ -13,19 +15,29 @@ namespace Mba.Ast
 
         public long Value { get; }
 
+        public ulong UValue => (ulong)Value;
+
         public ConstNode(ulong value, uint bitSize) : base(AstKind.Const, bitSize)
         {
+            var name = new StackFrame(1, true).GetMethod().Name;
+            if (name != "Const")
+                Debugger.Break();
             Value = (long)value;
         }
 
         public ConstNode(long value, uint bitSize) : base(AstKind.Const, bitSize)
         {
+            var name = new StackFrame(1, true).GetMethod().Name;
+            if (name != "Const")
+                Debugger.Break();
             Value = (long)value;
         }
 
         public ConstNode(UInt128 value, uint bitSize) : this((ulong)value, bitSize)
         {
-
+            var name = new StackFrame(1, true).GetMethod().Name;
+            if (name != "Const")
+                Debugger.Break();
         }
     }
 }

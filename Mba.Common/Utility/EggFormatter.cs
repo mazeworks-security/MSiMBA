@@ -64,7 +64,7 @@ namespace Mba.Common.Utility
         {
             return kind switch
             {
-                AstKind.Power => "**",
+                AstKind.Pow => "**",
                 AstKind.Add => "+",
                 AstKind.Mul => "*",
                 AstKind.And => "&",

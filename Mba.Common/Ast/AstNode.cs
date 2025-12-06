@@ -17,7 +17,7 @@ namespace Mba.Ast
         Var = 2,
         Ref = 3,
 
-        Power = 4,
+        Pow = 4,
         Shl = 5,
         Add = 6,
         Mul = 7,

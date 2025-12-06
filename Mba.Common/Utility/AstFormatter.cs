@@ -42,7 +42,7 @@ namespace Mba.Utility
                 return;
             }
 
-            if (node is BinaryNode)
+            if (node is BinaryNode || node is ICmpNode cmpNode)
             {
                 sb.Append("(");
 
@@ -95,7 +95,7 @@ namespace Mba.Utility
             return node.Kind switch
             {
                 AstKind.Const => "",
-                AstKind.Power => "**",
+                AstKind.Pow => "**",
                 AstKind.Add => "+",
                 AstKind.Mul => "*",
                 AstKind.And => "&",
@@ -108,12 +108,12 @@ namespace Mba.Utility
                 AstKind.Zext => "zx",
                 AstKind.Sext => "sx",
                 AstKind.Trunc => "tr",
-                AstKind.ICmp => GetPredicateName((node as ICmpNode).Pred),
+                AstKind.ICmp => GetPredicateOperator((node as ICmpNode).Pred),
                 _ => throw new InvalidOperationException($"Unrecognized operator: {node.Kind.ToString()}")
             };
         }
 
-        private static string GetPredicateName(Predicate pred)
+        public static string GetPredicateOperator(Predicate pred)
         {
             return pred switch
             {

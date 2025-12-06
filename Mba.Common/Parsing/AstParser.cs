@@ -14,6 +14,9 @@ namespace Mba.Parsing
     public static class AstParser
     {
         public static AstNode Parse(string exprText, uint bitSize)
+            => Parse(exprText, bitSize, new(), new(), new());
+
+        public static AstNode Parse(string exprText, uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
         {
             // Parse the expression AST.
             var charStream = new AntlrInputStream(exprText);
@@ -29,7 +32,7 @@ namespace Mba.Parsing
                 throw new InvalidOperationException($"Parsing ast failed. Encountered {errCount} errors.");
 
             // Process the parse tree into a usable AST node.
-            var visitor = new AstTranslationVisitor(bitSize);
+            var visitor = new AstTranslationVisitor(bitSize, varNodes, constNodes, wildCardConstantNodes);
             var result = visitor.Visit(expr);
             return result;
         }

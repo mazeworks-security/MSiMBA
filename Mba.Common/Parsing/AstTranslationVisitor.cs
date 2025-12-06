@@ -19,13 +19,27 @@ namespace Mba.Parsing
     {
         private readonly uint bitSize;
 
-        private readonly Dictionary<string, VarNode> varNodes = new();
+        private readonly Dictionary<string, VarNode> varNodes;
 
-        private readonly Dictionary<string, WildCardConstantNode> wildCardConstantNodes = new();
+        private readonly Dictionary<(ulong, uint), ConstNode> constNodes;
+
+        private readonly Dictionary<string, WildCardConstantNode> wildCardConstantNodes;
 
         public AstTranslationVisitor(uint bitSize)
         {
             this.bitSize = bitSize;
+            varNodes = new();
+            constNodes = new();
+            wildCardConstantNodes = new();
+            
+        }
+
+        public AstTranslationVisitor(uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
+        {
+            this.bitSize = bitSize;
+            this.varNodes = varNodes;
+            this.constNodes = constNodes;
+            this.wildCardConstantNodes = wildCardConstantNodes;
         }
 
         public override AstNode VisitGamba([NotNull] ExprParser.GambaContext context)
@@ -77,7 +91,7 @@ namespace Mba.Parsing
                 "<<" => Shl(op1, op2),
                 //"<<" => new ShlNode(op1, op2),
                 "+" => new AddNode(op1, op2),
-                "-" => new AddNode(op1, new MulNode(op2, new ConstNode(-1, op1.BitSize))),
+                "-" => new AddNode(op1, new MulNode(op2, Const(-1, op1.BitSize))),
                 "&" => new AndNode(op1, op2),
                 "|" => new OrNode(op1, op2),
                 "^" => new XorNode(op1, op2),
@@ -109,10 +123,10 @@ namespace Mba.Parsing
                     coeff *= 2;
                 }
 
-                return new MulNode(new ConstNode(coeff, op1.BitSize), op1);
+                return new MulNode(Const(coeff, op1.BitSize), op1); 
             }
 
-            var def = new MulNode(op1, new PowerNode(new ConstNode((ulong)2, op1.BitSize), op2));
+            var def = new MulNode(op1, new PowerNode(Const((ulong)2, op1.BitSize), op2));
             return def;
         }
 
@@ -131,7 +145,7 @@ namespace Mba.Parsing
                 "~" => new NegNode(op1),
                 // Write "-x" as "x * -1".
                 // Note that if "x" is a constant(which happens because our parser interprets negative constants as subtraction), we propagate the entire expression to a negative constant/
-                "-" => op1 is ConstNode constNode ? GetNegativeConstant((UInt128)constNode.Value, op1.BitSize) : new MulNode(op1, new ConstNode(-1, op1.BitSize)),
+                "-" => op1 is ConstNode constNode ? GetNegativeConstant((UInt128)constNode.Value, op1.BitSize) : new MulNode(op1, Const(-1, op1.BitSize)),
                 _ => throw new InvalidOperationException($"Unrecognized unary operator: {unaryOperator}")
             };
 
@@ -139,7 +153,7 @@ namespace Mba.Parsing
         }
 
         // Truncate the constant down to our bitsize, then multiply it by -1 and turn it into a ConstNode.
-        private ConstNode GetNegativeConstant(UInt128 value, uint size) => new ConstNode(0 - (ulong)ModuloReducer.ReduceToModulo((ulong)value, size), size);
+        private ConstNode GetNegativeConstant(UInt128 value, uint size) => Const(0 - (ulong)ModuloReducer.ReduceToModulo((ulong)value, size), size);
 
         public override AstNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
@@ -202,7 +216,20 @@ namespace Mba.Parsing
             var text = context.NUMBER().GetText();
             var value = (ulong)UInt128.Parse(text.Replace("0x", ""), text.Contains("0x") ? NumberStyles.HexNumber : NumberStyles.Number);
             var size = context.WIDTH_SPECIFIER() != null ? GetWidth(context.WIDTH_SPECIFIER()) : bitSize;
-            return new ConstNode(value, size);
+            var constNode = Const(value, size);
+            return constNode;
+        }
+
+        private ConstNode Const(long value, uint bitSize)
+            => Const((ulong)value, bitSize);
+
+        private ConstNode Const(ulong value, uint bitSize)
+        {
+            if (constNodes.TryGetValue((value, bitSize), out var existing))
+                return existing;
+            var node = new ConstNode(value, bitSize);
+            constNodes[(value, bitSize)] = node;
+            return node;
         }
 
         public override AstNode VisitWildCardNumberExpression([NotNull] ExprParser.WildCardNumberExpressionContext context)
