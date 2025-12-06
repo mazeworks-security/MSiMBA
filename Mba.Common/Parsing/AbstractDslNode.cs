@@ -13,7 +13,6 @@ namespace Mba.Common.Parsing
         Node,
     }
 
-
     public class Dsl(IReadOnlyList<DslFunctionGroup> functionGroups, IReadOnlyList<DslRuleGroup> ruleGroups) : AbstractDslNode
     {
         public IReadOnlyList<DslFunctionGroup> FunctionGroups { get; } = functionGroups;

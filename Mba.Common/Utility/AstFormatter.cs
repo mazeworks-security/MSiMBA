@@ -84,7 +84,22 @@ namespace Mba.Utility
                 sb.Append(" : ");
                 FormatAstInternal(node.Children[2], ref sb);
                 sb.Append(")");
+                return;
             }
+
+            if (node is IntrinsicCallNode)
+            {
+                sb.Append("(");
+                sb.Append($"{GetOperatorName(node)}");
+                for(int i = 0; i < node.Children.Count; i++)
+                {
+                    FormatAstInternal(node.Children[i], ref sb);
+                    if (i != node.Children.Count - 1)
+                        sb.Append(", ");
+                }
+                sb.Append(")");
+            }
+
 
             throw new InvalidOperationException($"Cannot print ast kind: {node.Kind}");
         }
@@ -109,6 +124,7 @@ namespace Mba.Utility
                 AstKind.Sext => "sx",
                 AstKind.Trunc => "tr",
                 AstKind.ICmp => GetPredicateOperator((node as ICmpNode).Pred),
+                AstKind.IntrinsicCall => (node as IntrinsicCallNode).Name,
                 _ => throw new InvalidOperationException($"Unrecognized operator: {node.Kind.ToString()}")
             };
         }
