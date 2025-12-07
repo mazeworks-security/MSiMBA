@@ -19,25 +19,17 @@ namespace Mba.Ast
 
         public ConstNode(ulong value, uint bitSize) : base(AstKind.Const, bitSize)
         {
-            var name = new StackFrame(1, true).GetMethod().Name;
-            if (name != "Const")
-                Debugger.Break();
             Value = (long)value;
         }
 
         public ConstNode(long value, uint bitSize) : base(AstKind.Const, bitSize)
         {
-            var name = new StackFrame(1, true).GetMethod().Name;
-            if (name != "Const")
-                Debugger.Break();
             Value = (long)value;
         }
 
         public ConstNode(UInt128 value, uint bitSize) : this((ulong)value, bitSize)
         {
-            var name = new StackFrame(1, true).GetMethod().Name;
-            if (name != "Const")
-                Debugger.Break();
+
         }
     }
 }

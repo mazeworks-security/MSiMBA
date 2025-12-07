@@ -37,6 +37,9 @@ namespace Mba.Ast
         Select = 20, // Conditional select
 
         IntrinsicCall = 21, // Intrinsic calls used by our DSL
+
+        ConditionalAnd = 22,
+        ConditionalOr = 23,
     }
 
     public abstract class AstNode

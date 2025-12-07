@@ -31,7 +31,7 @@ namespace Mba.Common.Parsing
         public string Name { get; } = name;
         public IReadOnlyList<DslFunctionArgument> Arguments { get; } = arguments;
         public DslType ReturnType { get; } = returnType;
-        public AstNode Body { get; } = body;
+        public AstNode Body { get; set; } = body;
     }
 
     public class DslFunctionArgument(string name, DslType type) : AbstractDslNode
@@ -55,9 +55,17 @@ namespace Mba.Common.Parsing
     public class DslRule(string name, AstNode before, AstNode after, AstNode precondition) : AbstractDslNode
     {
         public string Name { get; } = name;
-        public AstNode Before { get; } = before;
-        public AstNode After { get; } = after;
-        public AstNode Precondition { get; } = precondition;
+        public AstNode Before { get; set; } = before;
+        public AstNode After { get; set; } = after;
+        public AstNode Precondition { get; set; } = precondition;
+
+        public override string ToString()
+        {
+            var str = $"{Name}: {Before} => {After}";
+            if (Precondition != null)
+                str += $" :: {Precondition}";
+            return str;
+        }
     }
 
     public class DslAstParsingWrapper : AbstractDslNode

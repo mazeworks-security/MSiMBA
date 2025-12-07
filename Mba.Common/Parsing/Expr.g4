@@ -33,6 +33,8 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('zx') type #ZextExpression
             | expression ('sx') type #SextExpression
             | expression ('tr') type #TruncExpression
+            | expression ('&&') expression #ConditionalAndExpression
+            | expression ('||') expression #ConditionalOrExpression
             | expression ICMP_OPERATOR expression #ICmpExpression
             | expression ('?') expression (':') expression #SelectExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression

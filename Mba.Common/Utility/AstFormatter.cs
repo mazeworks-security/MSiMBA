@@ -42,7 +42,7 @@ namespace Mba.Utility
                 return;
             }
 
-            if (node is BinaryNode || node is ICmpNode cmpNode)
+            if (node is BinaryNode || node is ICmpNode cmpNode || node is ConditionalAndNode || node is ConditionalOrNode)
             {
                 sb.Append("(");
 
@@ -90,14 +90,15 @@ namespace Mba.Utility
             if (node is IntrinsicCallNode)
             {
                 sb.Append("(");
-                sb.Append($"{GetOperatorName(node)}");
+                sb.Append($"{GetOperatorName(node)}(");
                 for(int i = 0; i < node.Children.Count; i++)
                 {
                     FormatAstInternal(node.Children[i], ref sb);
                     if (i != node.Children.Count - 1)
                         sb.Append(", ");
                 }
-                sb.Append(")");
+                sb.Append("))");
+                return;
             }
 
 
@@ -106,7 +107,6 @@ namespace Mba.Utility
 
         public static string GetOperatorName(AstNode node)
         {
-
             return node.Kind switch
             {
                 AstKind.Const => "",
@@ -125,6 +125,8 @@ namespace Mba.Utility
                 AstKind.Trunc => "tr",
                 AstKind.ICmp => GetPredicateOperator((node as ICmpNode).Pred),
                 AstKind.IntrinsicCall => (node as IntrinsicCallNode).Name,
+                AstKind.ConditionalAnd => "&&",
+                AstKind.ConditionalOr => "||",
                 _ => throw new InvalidOperationException($"Unrecognized operator: {node.Kind.ToString()}")
             };
         }

@@ -148,6 +148,12 @@ namespace Mba.Parsing
         public override AbstractDslNode VisitLshrExpression([NotNull] ExprParser.LshrExpressionContext context)
             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
 
+        public override AbstractDslNode VisitConditionalAndExpression([NotNull] ExprParser.ConditionalAndExpressionContext context)
+             => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
+
+        public override AbstractDslNode VisitConditionalOrExpression([NotNull] ExprParser.ConditionalOrExpressionContext context)
+            => Binary(context.expression()[0], context.expression()[1], context.children[1].GetText());
+
         private AbstractDslNode Binary(ExprParser.ExpressionContext exp1, ExprParser.ExpressionContext exp2, string text)
         {
             var op1 = (AstNode)Visit(exp1);
@@ -167,6 +173,8 @@ namespace Mba.Parsing
                 "|" => new OrNode(op1, op2),
                 "^" => new XorNode(op1, op2),
                 ">>" => new LshrNode(op1, op2),
+                "&&" => new ConditionalAndNode(op1, op2),
+                "||" => new ConditionalOrNode(op1, op2),
                 _ => throw new InvalidOperationException($"Unrecognized binary operator: {binaryOperator}")
             };
 
