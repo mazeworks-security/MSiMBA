@@ -237,22 +237,36 @@ namespace Mba.Parsing
         public override AbstractDslNode VisitZextExpression([NotNull] ExprParser.ZextExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.type());
+            var width = GetWidth(context.INTEGER_TYPE().GetText());
             return new ZextNode(op1, width);
+        }
+
+        public override AbstractDslNode VisitZextUnkWidthExpression([NotNull] ExprParser.ZextUnkWidthExpressionContext context)
+        {
+            var op1 = Visit(context.expression()[0]);
+            var op2 = Visit(context.expression()[1]);
+            return ZextNode.UnkWidth(op1, op2);
         }
 
         public override AbstractDslNode VisitSextExpression([NotNull] ExprParser.SextExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.type());
+            var width = GetWidth(context.INTEGER_TYPE().GetText());
             return new SextNode(op1, width);
         }
 
         public override AbstractDslNode VisitTruncExpression([NotNull] ExprParser.TruncExpressionContext context)
         {
             var op1 = Visit(context.expression());
-            var width = GetWidth(context.type());
+            var width = GetWidth(context.INTEGER_TYPE().GetText());
             return new TruncNode(op1, width);
+        }
+
+        public override AbstractDslNode VisitTruncUnkWidthExpression([NotNull] ExprParser.TruncUnkWidthExpressionContext context)
+        {
+            var op1 = Visit(context.expression()[0]);
+            var op2 = Visit(context.expression()[1]);
+            return TruncNode.UnkWidth(op1, op2);
         }
 
         public override AbstractDslNode VisitICmpExpression([NotNull] ExprParser.ICmpExpressionContext context)
@@ -287,14 +301,14 @@ namespace Mba.Parsing
             return new SelectNode(op1, op2, op3);
         }
 
-        private uint GetWidth(ExprParser.TypeContext widthSpecifier)
-            => uint.Parse(widthSpecifier.ID().ToString().Substring(1));
+        private uint GetWidth(string s)
+            => uint.Parse(s.Substring(1));
 
         public override AbstractDslNode VisitNumberExpression([NotNull] ExprParser.NumberExpressionContext context)
         {
             var text = context.NUMBER().GetText();
             var value = (ulong)UInt128.Parse(text.Replace("0x", ""), text.Contains("0x") ? NumberStyles.HexNumber : NumberStyles.Number);
-            var size = context.type() != null ? GetWidth(context.type()) : bitSize;
+            var size = context.INTEGER_TYPE() != null ? GetWidth(context.INTEGER_TYPE().GetText()) : bitSize;
             var constNode = Const(value, size);
             return constNode;
         }
@@ -344,7 +358,7 @@ namespace Mba.Parsing
             //if (varNodes.TryGetValue(text, out VarNode varNode))
             //    return varNode;
 
-            var size = context.type() != null ? GetWidth(context.type()) : bitSize;
+            var size = context.INTEGER_TYPE() != null ? GetWidth(context.INTEGER_TYPE().GetText()) : bitSize;
 
             var varNode = new VarNode(text, size);
             //varNodes.Add(text, varNode);

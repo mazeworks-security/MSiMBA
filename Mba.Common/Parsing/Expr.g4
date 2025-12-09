@@ -13,7 +13,7 @@ function:
 
 functionArgument: ID (':') type;
 
-type: ID;
+type: INTEGER_TYPE | ID;
 
 ruleGroup: RULES ID ('[') rewriteRule+ (']');
 
@@ -30,17 +30,19 @@ expression:   LPARAM expression RPARAM                              #Parenthesiz
             | expression ('^') expression #XorExpression
             | expression ('|') expression #OrExpression
             | expression ('>>') expression #LshrExpression
-            | expression ('zx') type #ZextExpression
-            | expression ('sx') type #SextExpression
-            | expression ('tr') type #TruncExpression
+            | expression ('zx') INTEGER_TYPE #ZextExpression
+            | expression ('zx') expression #ZextUnkWidthExpression
+            | expression ('sx') INTEGER_TYPE #SextExpression
+            | expression ('tr') INTEGER_TYPE #TruncExpression
+            | expression ('tr') expression #TruncUnkWidthExpression
             | expression ('&&') expression #ConditionalAndExpression
             | expression ('||') expression #ConditionalOrExpression
             | expression ICMP_OPERATOR expression #ICmpExpression
             | expression ('?') expression (':') expression #SelectExpression
             | ('Const') LPARAM ID RPARAM #WildCardNumberExpression
             | ID LPARAM expression ((',') expression)* RPARAM #IntrinsicCallExpression
-            | NUMBER (':' type)? #NumberExpression
-            | ID (':' type)? #IdExpression
+            | NUMBER (':' INTEGER_TYPE)? #NumberExpression
+            | ID (':' INTEGER_TYPE)? #IdExpression
             ;
 
 
@@ -61,6 +63,7 @@ STRING      : ('"' ~["]* '"') | '%' STRING;
 // DECIMAL      : [0-9]+;
 // HEXADECIMAL: '0x' ([a-fA-F0-9])+;
 NUMBER: ([0-9]+) | ('0x' ([a-fA-F0-9])+);
+INTEGER_TYPE: 'i' NUMBER;
 
 ID          : [a-zA-Z_] ([a-zA-Z0-9_])*;
 

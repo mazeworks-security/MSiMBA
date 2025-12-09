@@ -9,11 +9,24 @@ namespace Mba.Common.Ast
 {
     public class ZextNode : AstNode
     {
-        public ZextNode(AstNode op1, uint bitwidth) : base(AstKind.Zext, bitwidth, op1)
+        public static ZextNode UnkWidth(AstNode a, AstNode b)
+            => b is ConstNode cn ? new ZextNode(a, cn) : new ZextNode(a, b);
+
+        public ZextNode(AstNode op1, ConstNode bitwidth) : base(AstKind.Zext, (uint)bitwidth.UValue, op1)
         {
             
         }
 
-        protected override int OpCount => 1;
+        public ZextNode(AstNode op1, uint bitWidth) : base(AstKind.Zext, bitWidth, op1, new ConstNode((ulong)bitWidth, 8))
+        { 
+            
+        }
+
+        private ZextNode(AstNode op1, AstNode op2) : base(AstKind.Zext, 64, op1, op2)
+        {
+            
+        }
+
+        protected override int OpCount => 2;
     }
 }
