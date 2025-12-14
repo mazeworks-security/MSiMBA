@@ -1,6 +1,7 @@
 ﻿using Mba.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
@@ -64,6 +65,8 @@ namespace Mba.Ast
 
         public AstNode(AstKind kind, uint bitSize, params AstNode[] nodes)
         {
+            if (kind == AstKind.Trunc && nodes.Length != 2)
+                Debugger.Break();
             Kind = kind;
             BitSize = bitSize;
             operands = new List<AstNode>(nodes.Length);

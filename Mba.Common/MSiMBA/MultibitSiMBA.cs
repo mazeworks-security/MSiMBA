@@ -646,6 +646,25 @@ namespace Mba.Common.MSiMBA
             }
         }
 
+        public static unsafe void SubtractCoeffBool(ApInt moduloMask, ApInt* pResultVec, ushort bitIndex, ApInt coeff, int firstStart, int width, int varCount, bool onlyOneVar, ulong trueMask)
+        {
+            var offset = bitIndex * width;
+
+            var v0 = BitOperations.TrailingZeroCount(trueMask);
+            var groupSize1 = (int)((ulong)1 << (ushort)v0);
+            var period1 = 2 * groupSize1;
+            for (int start = firstStart; start < width; start += period1)
+            {
+                for (int i = start; i < start + groupSize1; i++)
+                {
+                    var castedI = (ulong)(uint)i;
+                    var isTrue2 = (castedI & trueMask) == trueMask;
+                    if (i != firstStart && (onlyOneVar || isTrue2))
+                        pResultVec[offset + i] = moduloMask & (pResultVec[offset + i] ^ coeff);
+                }
+            }
+        }
+
         // Returns true if the given variable indices are set to true within the result vector entry.
         private static bool AreVariablesTrue(ApInt n, List<int> variables)
         {

@@ -13,13 +13,13 @@ namespace Mba.Common.Ast
         public static TruncNode UnkWidth(AstNode a, AstNode b)
             => b is ConstNode cn ? new TruncNode(a, cn) : new TruncNode(a, b);
 
-        public TruncNode(AstNode op1, ConstNode bitwidth) : base(AstKind.Trunc, (uint)bitwidth.UValue, op1)
+        public TruncNode(AstNode op1, ConstNode bitwidth) : base(AstKind.Trunc, (uint)bitwidth.UValue, op1, bitwidth)
         {
 
         }
 
 
-        public TruncNode(AstNode op1, uint bitWidth) : base(AstKind.Trunc, bitWidth, op1, new ConstNode((ulong)bitWidth, 8))
+        public TruncNode(AstNode op1, uint bitWidth) : base(AstKind.Trunc, bitWidth, op1, new ConstNode((ulong)bitWidth, 64))
         {
 
         }

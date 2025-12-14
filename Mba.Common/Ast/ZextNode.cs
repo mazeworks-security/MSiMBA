@@ -12,12 +12,12 @@ namespace Mba.Common.Ast
         public static ZextNode UnkWidth(AstNode a, AstNode b)
             => b is ConstNode cn ? new ZextNode(a, cn) : new ZextNode(a, b);
 
-        public ZextNode(AstNode op1, ConstNode bitwidth) : base(AstKind.Zext, (uint)bitwidth.UValue, op1)
+        public ZextNode(AstNode op1, ConstNode bitwidth) : base(AstKind.Zext, (uint)bitwidth.UValue, op1, bitwidth)
         {
             
         }
 
-        public ZextNode(AstNode op1, uint bitWidth) : base(AstKind.Zext, bitWidth, op1, new ConstNode((ulong)bitWidth, 8))
+        public ZextNode(AstNode op1, uint bitWidth) : base(AstKind.Zext, bitWidth, op1, new ConstNode((ulong)bitWidth, 64))
         { 
             
         }
