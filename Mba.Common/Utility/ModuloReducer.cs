@@ -11,6 +11,8 @@ namespace Mba.Utility
     {
         public static ulong GetMask(uint bitCount)
         {
+            if (bitCount == 0)
+                return 0;
             return ulong.MaxValue >> ((ushort)64 - (ushort)bitCount);
             //return maskTable[bitCount];
         }
