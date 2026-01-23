@@ -8,7 +8,7 @@
 
 namespace symbsat {
 
-template <size_t N, template <typename> class Order = Lex>
+template <size_t N, template <typename> class Order = DegRevLex>
 class Monom {
 
   friend Lex<Monom>;
