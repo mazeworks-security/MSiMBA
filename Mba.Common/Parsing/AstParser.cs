@@ -18,6 +18,8 @@ namespace Mba.Parsing
 
         public static AbstractDslNode ParseDsl(string exprText, uint bitSize, Dictionary<string, VarNode> varNodes, Dictionary<(ulong, uint), ConstNode> constNodes, Dictionary<string, WildCardConstantNode> wildCardConstantNodes)
         {
+            
+            
             // Parse the expression AST.
             var charStream = new AntlrInputStream(exprText);
             var lexer = new ExprLexer(charStream);

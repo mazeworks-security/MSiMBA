@@ -40,7 +40,7 @@ idList
   ;
 
 assignStmt
-  : ASSIGN lhs EQUAL expr SEMI
+  : ASSIGN lhs EQUAL expression SEMI
   ;
 
 lhs
@@ -64,7 +64,7 @@ portConnList
   ;
 
 portConn
-  : DOT identifier LPAREN expr? RPAREN
+  : DOT identifier LPAREN expression? RPAREN
   ;
 
 namedArgList
@@ -72,42 +72,47 @@ namedArgList
   ;
 
 namedArg
-  : DOT identifier LPAREN expr? RPAREN
+  : DOT identifier LPAREN expression? RPAREN
   ;
 
-expr
-  : ternaryExpr
+expression
+  :     LPAREN expression RPAREN #ParenthesizedExpression |
+        expression ('&') expression #AndExpression |
+        expression ('^') expression #XorExpression |
+        expression ('|') expression #OrExpression  |
+        ('~') expression #NegExpression |
+        lhs #LhsExpression
   ;
 
-ternaryExpr
-  : orExpr (QUESTION expr COLON expr)?
-  ;
+//ternaryExpr
+//  : orExpr (QUESTION expr COLON expr)?
+//  ;
+//
+//orExpr
+//  : xorExpr (PIPE xorExpr)*
+//  ;
+//
+//xorExpr
+//  : andExpr (CARET andExpr)*
+//  ;
+//
+//andExpr
+//  : unaryExpr (AMP unaryExpr)*
+//  ;
+//
+//unaryExpr
+//  : (TILDE | AMP | PIPE)* primary
+//  ;
 
-orExpr
-  : xorExpr (PIPE xorExpr)*
-  ;
-
-xorExpr
-  : andExpr (CARET andExpr)*
-  ;
-
-andExpr
-  : unaryExpr (AMP unaryExpr)*
-  ;
-
-unaryExpr
-  : (TILDE | AMP | PIPE)* primary
-  ;
-
-primary
-  : LPAREN expr RPAREN
-  | concat
-  | atom
-  ;
-
-concat
-  : LBRACE expr (COMMA expr)+ RBRACE
-  ;
+//primary
+//  : LPAREN expr RPAREN
+//  | concat
+//  | atom
+//  ;
+//
+//concat
+//  : LBRACE expr (COMMA expr)+ RBRACE
+//  ;
 
 atom
   : identifier bitSelect?
